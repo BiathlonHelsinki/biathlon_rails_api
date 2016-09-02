@@ -37,6 +37,7 @@ class Credit < ApplicationRecord
     api = BidappApi.new
     transaction = api.mint(user.accounts.primary.first.address, value)
     user.accounts.primary.first.balance = user.accounts.primary.first.balance.to_i + value
+    user.latest_balance = user.accounts.primary.first.balance
     if user.save(validate: false)
       logger.warn('saved updated balance of ' + user.accounts.primary.first.balance.to_s)
     else

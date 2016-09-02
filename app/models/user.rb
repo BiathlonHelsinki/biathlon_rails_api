@@ -24,9 +24,10 @@ class User < ActiveRecord::Base
   scope :untagged, -> () { includes(:nfcs).where( nfcs: {user_id: nil}) }
   mount_uploader :avatar, ImageUploader
   before_save :update_avatar_attributes
+  validates_presence_of :geth_pwd
   
   def copy_password
-    geth_pwd = encrypted_password
+    geth_pwd = SecureRandom.hex(13)
   end
   
   # has_many :activities, as: :item
