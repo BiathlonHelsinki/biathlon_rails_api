@@ -35,7 +35,7 @@ class BidappApi
     JSON.parse(response.body)['data']
   end
   
-  def transfer(sender, recipient, tokens, password) 
+  def transfer(sender, recipient, tokens) 
     response = HTTParty.post(API_URL + '/transfer_owner', body: {sender: sender, recipient: recipient, tokens: tokens } )
     JSON.parse(response.body)['data']
   end  
