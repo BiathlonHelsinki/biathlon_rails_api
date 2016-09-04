@@ -4,4 +4,6 @@ class Hardware < ApplicationRecord
   acts_as_token_authenticatable
   extend FriendlyId
   friendly_id :name, use: [:slugged, :finders ]
+  validates_presence_of :name
+  validates_uniqueness_of :name
 end

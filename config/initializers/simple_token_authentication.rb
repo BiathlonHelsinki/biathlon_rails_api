@@ -1,3 +1,3 @@
 SimpleTokenAuthentication.configure do |config|
-  config.identifiers = { user: :email, hardware: :mac_address }
+  config.identifiers = { user: :email, hardware: :name }
 end
