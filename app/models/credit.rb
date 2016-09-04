@@ -20,7 +20,7 @@ class Credit < ApplicationRecord
     user.save(validate: false)
     et = Ethtransaction.find_by(txaddress: transaction)
     # die if et.nil?
-    activities <<  Activity.create(user: user, item: self, ethtransaction_id: et.id, description: 'was de-credited for')
+    activities <<  Activity.create(user: user, item: self, ethtransaction_id: et.id, description: 'was de-credited for', addition: -1)
     
   end
   
@@ -47,7 +47,7 @@ class Credit < ApplicationRecord
     et = Ethtransaction.find_by(txaddress: transaction)
     self.ethtransaction = et
     
-    activities <<  Activity.new(user: user, item: self, ethtransaction_id: et.id, description: 'was credited for')
+    activities <<  Activity.new(user: user, item: self, ethtransaction_id: et.id, description: 'was credited for', addition: 1)
 
     save!
   end

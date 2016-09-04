@@ -62,7 +62,7 @@ class Instance < ApplicationRecord
             et = Ethtransaction.find_by(txaddress: transaction)
           end
 
-          proposal.activities <<  Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, description: "spent a pledge of #{pledge.pledge}#{ENV['currency_symbol']} on", extra_info: 'which was scheduled')    
+          proposal.activities <<  Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, description: "spent a pledge of #{pledge.pledge}#{ENV['currency_symbol']} on", extra_info: 'which was scheduled', addition: -1)    
         end
         proposal.scheduled = true
         proposal.save!

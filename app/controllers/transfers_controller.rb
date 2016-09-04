@@ -19,7 +19,7 @@ class TransfersController < ApplicationController
     api = BidappApi.new
     begin
       if sender.accounts.primary.first.external == true
-        transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points], sender.geth_pwd)
+        transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points])
       else
         transaction = api.transfer_user(sender.accounts.first.address, recipient.accounts.first.address, params[:points], sender.geth_pwd)
       end
@@ -27,7 +27,7 @@ class TransfersController < ApplicationController
       
 
       a = Activity.create(user: recipient, item: current_user,
-        ethtransaction: et,
+        ethtransaction: et, addition: 0,
         description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})"
         )
       sender.update_balance_from_blockchain

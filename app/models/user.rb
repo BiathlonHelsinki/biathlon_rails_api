@@ -92,7 +92,7 @@ class User < ActiveRecord::Base
       
       # get transaction hash and add to activity feed. TODO: move to concern!!
       
-      a = Activity.new(user: self, item: instance, ethtransaction: Ethtransaction.find_by(txaddress: transaction), description: 'attended')
+      a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: Ethtransaction.find_by(txaddress: transaction), description: 'attended')
       if a.save
         return true
       else
