@@ -22,13 +22,13 @@ class UsersController < ApplicationController
   def link_temporary_tag
     @user = User.friendly.find(params[:user_id])
     @tag = Onetimer.find(params[:tag_id])
-    event = @tag.event
+    event = @tag.instance
     if event.users.include?(@user)
-      render json: {error: 'User already attended this event'}.to_json, status: :unprocessable_entry
+      render json: {error: 'User already attended this activity'}.to_json, status: :unprocessable_entry
     elsif @tag.claimed == true
       render json: {error: 'This tag was already claimed '}, status: :unprocessable_entry
     else
-      if @user.award_points(event, event.cost_bb)
+      if @user.award_points(event, event.cost_bb.nil? ? event.event.cost_bb : event.cost_bb)
         @tag.claimed = true
         @tag.save
         render json: {data: @user}, status: 200, location: @user
