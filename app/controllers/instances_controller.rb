@@ -23,7 +23,7 @@ class InstancesController < ApplicationController
   
   def onetimer
     event = Instance.friendly.find(params[:id])
-    @onetimer = Onetimer.create(event: event)
+    @onetimer = Onetimer.create(instance: event)
     if @onetimer.save
       Activity.create(user_id: 0, item: event,                   
                   description: 'attended anonymously', onetimer: @onetimer, addition: 0 )

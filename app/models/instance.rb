@@ -22,7 +22,8 @@ class Instance < ApplicationRecord
   scope :published, -> () { where(published: true) }
   scope :meetings, -> () {where(is_meeting: true)}
   scope :future, -> () {where(["start_at >=  ?", Time.now.strftime('%Y/%m/%d %H:%M')]) }
-  
+  scope :has_instance_on, -> (*args) { where(['published is true and (date(start_at) = ? OR (end_at is not null AND (date(start_at) <= ? AND date(end_at) >= ?)))', args.first, args.first, args.first] )}
+    
   def as_json(options = {})
     {
       :id => self.id,

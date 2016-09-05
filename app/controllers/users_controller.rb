@@ -41,11 +41,12 @@ class UsersController < ApplicationController
       
   def link_to_nfc
     @user = User.friendly.find(params[:id])
+    logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.name)
     begin
-      @user.nfcs << Nfc.create(tag_address: params[:tag_address], active: true)
-      render json: @user, status: 200
+      @user.nfcs << Nfc.create(tag_address: params[:tag_address], security_code: params[:securekey], active: true)
+      render json: {data: @user}, status: 200
     rescue
-      render json: {error: 'Error!'}, status: 500
+      render json: {error: 'Error!'}, status: 422
     end
   end
   
@@ -55,7 +56,12 @@ class UsersController < ApplicationController
   end
   
   def index
-    users = User.all
+    if params[:q].blank?
+      users = User.all
+    else
+      users = User.joins(:authentications).fuzzy_search({name: params[:q], email: params[:q], username: params[:q], authentications: { username: params[:q] }}, false)
+    end
+
 
     render(
       json: users

@@ -1,8 +1,8 @@
 class Onetimer < ApplicationRecord
-  belongs_to :event
+  belongs_to :instance, touch: true
   belongs_to :user
   before_validation :generate_code
-  validates_presence_of :code, :event_id
+  validates_presence_of :code, :instance_id
   has_one :activity
   
   def generate_code
