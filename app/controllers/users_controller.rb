@@ -30,6 +30,7 @@ class UsersController < ApplicationController
     else
       if @user.award_points(event, event.cost_bb.nil? ? event.event.cost_bb : event.cost_bb)
         @tag.claimed = true
+        @tag.user = @user
         @tag.save
         render json: {data: @user}, status: 200, location: @user
       else
@@ -64,7 +65,7 @@ class UsersController < ApplicationController
 
 
     render(
-      json: users
+      json: UserSerializer.new(users)
       )
   end
   

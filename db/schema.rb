@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160905072048) do
+ActiveRecord::Schema.define(version: 20160906114958) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -230,7 +230,7 @@ ActiveRecord::Schema.define(version: 20160905072048) do
   end
 
   create_table "instances", force: :cascade do |t|
-    t.integer  "event_id",           null: false
+    t.integer  "event_id",             null: false
     t.integer  "cost_bb"
     t.float    "cost_euros"
     t.datetime "start_at"
@@ -243,11 +243,12 @@ ActiveRecord::Schema.define(version: 20160905072048) do
     t.integer  "image_width"
     t.integer  "image_size"
     t.string   "slug"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
     t.string   "sequence"
     t.boolean  "is_meeting"
     t.integer  "proposal_id"
+    t.boolean  "allow_multiple_entry"
     t.index ["event_id"], name: "index_instances_on_event_id", using: :btree
     t.index ["place_id"], name: "index_instances_on_place_id", using: :btree
     t.index ["proposal_id"], name: "index_instances_on_proposal_id", using: :btree
@@ -445,6 +446,14 @@ ActiveRecord::Schema.define(version: 20160905072048) do
     t.integer  "avatar_size"
     t.integer  "avatar_width"
     t.integer  "avatar_height"
+    t.boolean  "opt_in"
+    t.string   "website"
+    t.text     "about_me"
+    t.string   "twitter_name"
+    t.string   "address"
+    t.string   "postcode"
+    t.string   "city"
+    t.string   "country"
     t.index ["email"], name: "index_users_on_email", unique: true, using: :btree
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true, using: :btree
     t.index ["slug"], name: "index_users_on_slug", unique: true, using: :btree
@@ -469,7 +478,6 @@ ActiveRecord::Schema.define(version: 20160905072048) do
   add_foreign_key "instances", "events"
   add_foreign_key "instances", "places"
   add_foreign_key "nfcs", "users"
-  add_foreign_key "onetimers", "events", column: "instance_id"
   add_foreign_key "onetimers", "users"
   add_foreign_key "pledges", "users"
   add_foreign_key "posts", "users"
