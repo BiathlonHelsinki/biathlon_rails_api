@@ -58,7 +58,7 @@ class InstancesController < ApplicationController
   
   def instance_params
     params.require(:instance).permit(:published, :event_id, :place_id, :primary_sponsor_id, :is_meeting, :proposal_id,
-    :secondary_sponsor_id, :cost_euros, :cost_bb, :sequence, :start_at, :end_at, :sequence, 
+    :secondary_sponsor_id, :cost_euros, :cost_bb,  :sequence, :start_at, :end_at, :sequence, :allow_multiple_entry,
     :parent_id, :image, translations_attributes: [:name, :description, :locale, :id]
     )
   end  
