@@ -1,5 +1,6 @@
 class Post < ApplicationRecord
   belongs_to :user
+  belongs_to :instance
   translates :title, :body, :fallbacks_for_empty_translations => true
   extend FriendlyId
   friendly_id :title_en , :use => [:slugged, :finders]
