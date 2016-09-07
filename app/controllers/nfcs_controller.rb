@@ -1,7 +1,7 @@
 class NfcsController < ApplicationController
 
   skip_before_action :authenticate_user!, raise: false
-  # before_action :authenticate_hardware!, only: [:unattached_users]
+  before_action :authenticate_hardware!, only: [:unattached_users]
   
   def unattached_users
     if params[:q].blank?
@@ -9,7 +9,7 @@ class NfcsController < ApplicationController
     else
       @users = User.joins(:authentications).fuzzy_search({name: params[:q], email: params[:q], username: params[:q], authentications: { username: params[:q] }}, false)
     end
-    render json: UserSerializer.new(@users), status: 200
+    render json: @users, status: 200
   end
   
   def user_from_tag
