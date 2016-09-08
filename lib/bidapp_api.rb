@@ -31,12 +31,19 @@ class BidappApi
   end
   
   def transfer_user(sender, recipient, tokens, password) 
-    response = HTTParty.post(API_URL + '/transfer', body: {sender: sender, recipient: recipient, tokens: tokens, unlock: password} )
-    JSON.parse(response.body)['data']
+    begin
+      response = HTTParty.post(API_URL + '/transfer', body: {sender: sender, recipient: recipient, tokens: tokens, unlock: password} )
+      return response.body
+
+    rescue HTTParty::Error => e
+      JSON.parse({error: "Error from #{API_URL + url}: #{e}"}.to_json)
+    rescue StandardError => e
+      JSON.parse({error: "Error contacting #{API_URL}: #{e}"}.to_json)
+    end
   end
   
   def transfer(sender, recipient, tokens) 
     response = HTTParty.post(API_URL + '/transfer_owner', body: {sender: sender, recipient: recipient, tokens: tokens } )
-    JSON.parse(response.body)['data']
+    return response.body
   end  
 end

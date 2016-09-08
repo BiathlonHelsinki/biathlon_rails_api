@@ -23,17 +23,25 @@ class TransfersController < ApplicationController
       else
         transaction = api.transfer_user(sender.accounts.first.address, recipient.accounts.first.address, params[:points], sender.geth_pwd)
       end
-      et = Ethtransaction.find_by(txaddress: transaction)
-      
-
-      a = Activity.create(user: recipient, item: current_user,
-        ethtransaction: et, addition: 0,
-        description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})"
-        )
-      sender.update_balance_from_blockchain
-      recipient.update_balance_from_blockchain
-      render json: {data: Ethtransaction.find_by(txaddress: transaction)}, status: 200
+      if JSON.parse(transaction)['error']
+        render json: {error: JSON.parse(transaction)['error']}, status: 400
+      else
+        et = nil
+        loop do
+          et = Ethtransaction.find_by(txaddress: JSON.parse(transaction)['data'])
+          sleep 1
+          break if !et.nil?
+        end
+        a = Activity.create(user: recipient, item: current_user,
+          ethtransaction: et, addition: 0,
+          description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})"
+          )
+        sender.update_balance_from_blockchain
+        recipient.update_balance_from_blockchain
+        render json: {data: JSON.parse(transaction)['data']}, status: 200
+      end
     rescue => e
+      logger.warn('errs are ' + e.inspect)
       render json: {error: e.inspect }, status: :unprocessable_entity
     end
     # fix this
