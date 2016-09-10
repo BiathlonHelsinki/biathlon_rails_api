@@ -26,12 +26,13 @@ class TransfersController < ApplicationController
       if JSON.parse(transaction)['error']
         render json: {error: JSON.parse(transaction)['error']}, status: 400
       else
-        et = nil
-        loop do
+        sleep 2
+        # et = nil
+        # loop do
           et = Ethtransaction.find_by(txaddress: JSON.parse(transaction)['data'])
-          sleep 1
-          break if !et.nil?
-        end
+        #   sleep 1
+        #   break if !et.nil?
+        # end
         a = Activity.create(user: recipient, item: current_user,
           ethtransaction: et, addition: 0,
           description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})"
