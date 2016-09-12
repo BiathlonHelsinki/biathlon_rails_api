@@ -29,6 +29,7 @@ module Biathlon
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
     config.time_zone = 'Helsinki'
+
     config.active_record.time_zone_aware_types = [:datetime, :time]
   end
   ActiveModelSerializers.config.adapter = :json_api 

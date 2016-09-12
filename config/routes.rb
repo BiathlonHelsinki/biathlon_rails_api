@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users, :controllers => { omniauth_callbacks: 'omniauth_callbacks' }
   devise_for :hardwares
-  
+
   resources :credits
   
   resources :events do
