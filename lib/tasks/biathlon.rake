@@ -11,7 +11,12 @@ namespace :bidapp do
     mainfeed['data']['accounts'].each do |acc|
       a = Account.find_or_create_by(address: acc.first)
       a.balance = acc.last['biathlon'].to_i rescue 0
-      a.save if a.changed?
+
+      if a.changed?
+        a.save
+        user.latest_balance = a.balance
+        user.save
+      end
     end
   end
   
