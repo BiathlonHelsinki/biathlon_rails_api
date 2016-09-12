@@ -14,8 +14,9 @@ namespace :bidapp do
 
       if a.changed?
         a.save
-        user.latest_balance = a.balance
-        user.save
+        next if a.user.nil?
+        a.user.latest_balance = a.balance
+        a.user.save!
       end
     end
   end
