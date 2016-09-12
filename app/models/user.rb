@@ -68,9 +68,18 @@ class User < ActiveRecord::Base
       
     # check user hasn't already attended, locally
     if instances.include?(instance)
-      errors.add(:base, :already_attended, message: 'You have already attended this event')
-      return false
-    else
+      if instance.allow_multiple_entry == true
+        today = Time.now.to_date
+        if !instances_users.where(instance: instance, visit_date: today).empty?
+          errors.add(:base, :already_attended, message: 'You have already attended this event!')
+          return false
+        end
+      else
+        errors.add(:base, :already_attended, message: 'You have already attended this event')
+        return false
+      end
+    end
+    # else
       # check if user has ethereum account yet
       if accounts.empty?
         create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
@@ -87,7 +96,7 @@ class User < ActiveRecord::Base
         logger.warn('minting error')
       end
       accounts.first.balance = accounts.first.balance.to_i + points
-      instances << instance
+      instances_users << InstancesUser.new(instance: instance, visit_date: Time.now.to_date)
       save(validate: false)
       
       # get transaction hash and add to activity feed. TODO: move to concern!!
@@ -99,7 +108,7 @@ class User < ActiveRecord::Base
         logger.warn('errors are ' + a.errors.inspect)
         return false
       end
-    end
+    # end
   end
 
   def self.find_for_oauth(auth, signed_in_resource = nil)
