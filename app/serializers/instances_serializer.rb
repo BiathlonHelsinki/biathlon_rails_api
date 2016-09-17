@@ -1,5 +1,5 @@
 class InstanceSerializer < ActiveModel::Serializer
-  attributes :id, :name, :start_at, :end_at, :description, :image
+  attributes :id, :name, :start_at, :end_at, :description, :cost_bb, :image
 
   
   def created_at

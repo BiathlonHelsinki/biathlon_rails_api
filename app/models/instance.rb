@@ -33,6 +33,7 @@ class Instance < ApplicationRecord
       :end => end_at.nil? ? start_at.strftime('%Y-%m-%d %H:%M:00') : end_at.strftime('%Y-%m-%d %H:%M:00'),
       :allDay => false, 
       :recurring => false,
+      :temps => self.cost_bb,
       :url => Rails.application.routes.url_helpers.instance_path(slug),
       #:color => "red"
     }

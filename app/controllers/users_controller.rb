@@ -34,6 +34,7 @@ class UsersController < ApplicationController
         @tag.save
         render json: {data: @user}, status: 200, location: @user
       else
+
         render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
       end
     end
@@ -42,12 +43,19 @@ class UsersController < ApplicationController
       
   def link_to_nfc
     @user = User.friendly.find(params[:id])
-    logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.name)
-    begin
-      @user.nfcs << Nfc.create(tag_address: params[:tag_address], security_code: params[:securekey], active: true)
-      render json: {data: @user}, status: 200
-    rescue
-      render json: {error: 'Error!'}, status: 422
+    # check for existing NFC
+    existing = Nfc.find_by(tag_address: params[:tag_address])
+    if existing.nil?
+      logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.name)
+      begin
+        @user.nfcs << Nfc.create(tag_address: params[:tag_address], security_code: params[:securekey], active: true)
+        render json: {data: @user}, status: 200
+      rescue
+        logger.warn("error")
+        render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
+      end
+    else
+      render json: {error: 'Card already belongs to user ' + existing.user.username + " (#{existing.user.name})"}, status: :unprocessable_entity
     end
   end
   
