@@ -24,7 +24,24 @@ class UsersController < ApplicationController
     @tag = Onetimer.find(params[:tag_id])
     event = @tag.instance
     if event.users.include?(@user)
-      render json: {error: 'User already attended this activity'}.to_json, status: :unprocessable_entry
+      if event.allow_multiple_entry == true
+        today = @tag.created_at.to_date
+        if @user.instances_users.where(instance: event, visit_date: today).empty?
+          if @user.award_points(event, event.cost_bb.nil? ? event.event.cost_bb : event.cost_bb)
+            @tag.claimed = true
+            @tag.user = @user
+            @tag.save
+            render json: {data: @user}, status: 200, location: @user
+          else
+
+            render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
+          end 
+        else
+          render json: {error: 'User already attended this activity'}.to_json, status: :unprocessable_entry
+        end
+      else
+        render json: {error: 'User already attended this activity'}.to_json, status: :unprocessable_entry
+      end
     elsif @tag.claimed == true
       render json: {error: 'This tag was already claimed '}, status: :unprocessable_entry
     else
