@@ -51,6 +51,7 @@ Rails.application.routes.draw do
       get :user_from_tag
     end
   end
+  match '/users/:user_id/instances/:instance_id/user_attend/:visit_date' => 'instances#user_attend', via: :get
   match '/link_temporary_tag' => 'users#link_temporary_tag', via: :post
   match '/users/auth/:provider/callback' => 'authentications#create', :via => :get
   get '/queries/totalSupply'  => 'queries#total_supply'

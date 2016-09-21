@@ -45,9 +45,18 @@ class InstancesController < ApplicationController
   end
   
   def user_attend
+
     @user = User.friendly.find(params[:user_id])
     event = Instance.friendly.find(params[:id])
-    if @user.award_points(event, event.cost_bb)
+    if params[:visit_date]
+      visit_date = params[:visit_date]
+    else      
+      
+      visit_date = Time.now.to_date
+    end
+
+    
+    if @user.award_points(event, event.cost_bb, visit_date.to_s)
       render json: @user, status: 200, location: @user
     else
       render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity

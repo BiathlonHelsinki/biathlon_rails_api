@@ -27,7 +27,7 @@ class UsersController < ApplicationController
       if event.allow_multiple_entry == true
         today = @tag.created_at.to_date
         if @user.instances_users.where(instance: event, visit_date: today).empty?
-          if @user.award_points(event, event.cost_bb.nil? ? event.event.cost_bb : event.cost_bb)
+          if @user.award_points(event, event.cost_bb.nil? ? event.event.cost_bb : event.cost_bb, visit_date.to_s)
             @tag.claimed = true
             @tag.user = @user
             @tag.save
@@ -45,7 +45,7 @@ class UsersController < ApplicationController
     elsif @tag.claimed == true
       render json: {error: 'This tag was already claimed '}, status: :unprocessable_entry
     else
-      if @user.award_points(event, event.cost_bb.nil? ? event.event.cost_bb : event.cost_bb)
+      if @user.award_points(event, event.cost_bb.nil? ? event.event.cost_bb : event.cost_bb, @tag.created_at.to_date.to_s)
         @tag.claimed = true
         @tag.user = @user
         @tag.save

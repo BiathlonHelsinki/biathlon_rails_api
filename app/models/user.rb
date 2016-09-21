@@ -64,14 +64,13 @@ class User < ActiveRecord::Base
      username_changed?
    end
    
-  def award_points(instance, points = 10)
-      
+  def award_points(instance, points = 10, visit_date = Time.now.to_date)
     # check user hasn't already attended, locally
     if instances.include?(instance)
       if instance.allow_multiple_entry == true
-        today = Time.now.to_date
-        if !instances_users.where(instance: instance, visit_date: today).empty?
-          errors.add(:base, :already_attended, message: 'You have already attended this event!')
+        if !instances_users.where(instance: instance, visit_date: visit_date).empty?
+          
+          errors.add(:base, :already_attended, message: 'You have already attended this event on ' + visit_date.to_s)
           return false
         end
       else
@@ -96,7 +95,7 @@ class User < ActiveRecord::Base
         logger.warn('minting error')
       end
       accounts.first.balance = accounts.first.balance.to_i + points
-      instances_users << InstancesUser.new(instance: instance, visit_date: Time.now.to_date)
+      instances_users << InstancesUser.new(instance: instance, visit_date: visit_date)
       save(validate: false)
       
       # get transaction hash and add to activity feed. TODO: move to concern!!
