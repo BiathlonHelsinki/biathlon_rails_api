@@ -63,7 +63,7 @@ class UsersController < ApplicationController
     # check for existing NFC
     existing = Nfc.find_by(tag_address: params[:tag_address])
     if existing.nil?
-      logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.name)
+      logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.inspect)
       begin
         @user.nfcs << Nfc.create(tag_address: params[:tag_address], security_code: params[:securekey], active: true)
         render json: {data: @user}, status: 200
