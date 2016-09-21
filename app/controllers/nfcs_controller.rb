@@ -5,7 +5,7 @@ class NfcsController < ApplicationController
   
   def unattached_users
     if params[:q].blank?
-      @users = User.untagged
+      @users = User.untagged.order(created_at: :desc)
     else
       @users = User.joins(:authentications).fuzzy_search({name: params[:q], email: params[:q], username: params[:q], authentications: { username: params[:q] }}, false)
     end
