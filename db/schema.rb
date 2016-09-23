@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160914100029) do
+ActiveRecord::Schema.define(version: 20160921140236) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -400,6 +400,8 @@ ActiveRecord::Schema.define(version: 20160914100029) do
     t.boolean  "notified"
     t.boolean  "scheduled"
     t.boolean  "allow_rescheduling"
+    t.integer  "recurrence"
+    t.integer  "intended_sessions"
     t.index ["user_id"], name: "index_proposals_on_user_id", using: :btree
   end
 

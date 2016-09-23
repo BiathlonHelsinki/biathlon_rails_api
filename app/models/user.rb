@@ -25,6 +25,23 @@ class User < ActiveRecord::Base
   mount_uploader :avatar, ImageUploader
   before_save :update_avatar_attributes
   validates_presence_of :geth_pwd
+
+
+  def events_attended
+    instances.size
+  end
+  
+  def last_attended
+    instances.order(:created_at).last
+  end
+  
+  def last_attended_at
+    if instances_users.empty?
+      nil
+    else
+      instances_users.where(user: self, instance: instances.order(:created_at).last).first.visit_date
+    end
+  end
   
   def copy_password
     geth_pwd = SecureRandom.hex(13)

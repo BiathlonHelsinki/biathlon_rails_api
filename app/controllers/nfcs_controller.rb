@@ -1,7 +1,7 @@
 class NfcsController < ApplicationController
 
   skip_before_action :authenticate_user!, raise: false
-  before_action :authenticate_hardware!, only: [:unattached_users]
+  before_action :authenticate_hardware!, only: [:unattached_users, :erase_tag]
   
   def unattached_users
     if params[:q].blank?
@@ -12,8 +12,25 @@ class NfcsController < ApplicationController
     render json: @users, status: 200
   end
   
+  def erase_tag
+    @nfc = Nfc.find_by(tag_address: params[:id])
+    if @nfc.nil?
+      render json: {error: 'Card is already blank, or at least not in our database!'}, status: 401
+    else
+      if @nfc.destroy
+        render json: @nfc, status: 200
+      else
+        render json: {error: 'No entry found for this tag!'}, status: 401
+      end
+    end
+  end
+  
   def user_from_tag
-    @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
+    if params[:securekey] == '00000000'
+      @nfc = Nfc.find_by(tag_address: params[:id])
+    else
+      @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
+    end
     if @nfc.nil?
       render json: {error: 'no security code on tag!'}, status: 401
     else
