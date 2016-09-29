@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160929093207) do
+ActiveRecord::Schema.define(version: 20160929110815) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -133,18 +133,19 @@ ActiveRecord::Schema.define(version: 20160929093207) do
   end
 
   create_table "ethtransactions", force: :cascade do |t|
-    t.integer  "transaction_type_id",                            null: false
-    t.string   "txaddress",           limit: 66,                 null: false
+    t.integer  "transaction_type_id",                                null: false
+    t.string   "txaddress",               limit: 66,                 null: false
     t.string   "source_account"
     t.string   "recipient_account"
     t.integer  "source_user"
     t.integer  "recipient_user"
     t.integer  "value"
     t.datetime "timeof"
-    t.datetime "created_at",                                     null: false
-    t.datetime "updated_at",                                     null: false
+    t.datetime "created_at",                                         null: false
+    t.datetime "updated_at",                                         null: false
     t.integer  "credit_id"
-    t.boolean  "confirmed",                      default: false, null: false
+    t.boolean  "confirmed",                          default: false, null: false
+    t.datetime "checked_confirmation_at"
     t.index ["transaction_type_id"], name: "index_ethtransactions_on_transaction_type_id", using: :btree
   end
 
