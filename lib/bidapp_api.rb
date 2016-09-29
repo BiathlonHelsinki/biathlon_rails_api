@@ -20,6 +20,11 @@ class BidappApi
     end
   end
   
+  def confirm(txhash)
+    response = HTTParty.post(API_URL + '/check_transaction', body: {txhash: txhash } )
+    return response.body
+  end
+  
   def mint(recipient, tokens) 
     response = HTTParty.post(API_URL + '/mint', body: {recipient: recipient, tokens: tokens} )
     JSON.parse(response.body)['data']
