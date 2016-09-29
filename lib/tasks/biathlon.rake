@@ -11,14 +11,14 @@ namespace :bidapp do
     api = BidappApi.new
     transactions = Ethtransaction.unconfirmed.order(id: :asc)
     transactions.each do |tx|
-      p 'checking ' + tx.txaddress
+      # p 'checking ' + tx.txaddress
       check = api.confirm(tx.txaddress)
       tx.checked_confirmation_at = Time.now
       if check['success']
         tx.confirmed = true
-        p 'confirmed on blockchain ' + tx.txaddress
+        # p 'confirmed on blockchain ' + tx.txaddress
       elsif check['error']
-        p 'No confirmation for ' + tx.txaddress
+        # p 'No confirmation for ' + tx.txaddress
       end
       tx.save(validate: false)
     end
