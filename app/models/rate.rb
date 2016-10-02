@@ -4,7 +4,6 @@ class Rate < ApplicationRecord
   validate :only_one_current
   scope :current, -> () { where(current: true) }
   
-  
   before_validation :block_out_others
   protected
 
@@ -15,6 +14,10 @@ class Rate < ApplicationRecord
         r.save
       end
     end
+  end
+  
+  def self.get_current
+    self.current.first
   end
   
   def only_one_current

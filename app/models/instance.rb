@@ -1,5 +1,5 @@
 class Instance < ApplicationRecord
-  belongs_to :experiment, foreign_key: 'event_id'
+  belongs_to :event, foreign_key: 'event_id'
   belongs_to :place
   translates :name, :description, :fallbacks_for_empty_translations => true
   accepts_nested_attributes_for :translations, :reject_if => proc {|x| x['name'].blank? && x['description'].blank? }
@@ -21,7 +21,10 @@ class Instance < ApplicationRecord
   }
   scope :published, -> () { where(published: true) }
   scope :meetings, -> () {where(is_meeting: true)}
-  scope :future, -> () {where(["start_at >=  ?", Time.now.strftime('%Y/%m/%d %H:%M')]) }
+  scope :future, -> () {where(["start_at >=  ?", Time.now.utc.strftime('%Y/%m/%d %H:%M')]) }
+  scope :past, -> () {where(["end_at <  ?", Time.now.utc.strftime('%Y/%m/%d %H:%M')]) }
+  scope :current, -> () { where(["start_at <=  ? and end_at >= ?", Time.now.utc.strftime('%Y/%m/%d %H:%M'), Time.now.utc.strftime('%Y/%m/%d %H:%M') ]) }
+  scope :not_open_day,  -> ()  { where("event_id != 1")}
   scope :has_instance_on, -> (*args) { where(['published is true and (date(start_at) = ? OR (end_at is not null AND (date(start_at) <= ? AND date(end_at) >= ?)))', args.first, args.first, args.first] )}
     
   def as_json(options = {})
@@ -34,8 +37,8 @@ class Instance < ApplicationRecord
       :allDay => false, 
       :recurring => false,
       :temps => self.cost_bb,
-      :url => Rails.application.routes.url_helpers.instance_path(slug),
-      #:color => "red"
+      :url => Rails.application.routes.url_helpers.instance_path(slug)
+
     }
 
   end
@@ -49,28 +52,80 @@ class Instance < ApplicationRecord
   end
   
   def spend_from_blockchain
-    if proposal
-      if proposal.scheduled != true
+    if published == true && spent_biathlon == false
+      counter = cost_in_temps
+      if proposal
         api = BidappApi.new
-        proposal.pledges.each do |pledge|
-          next if pledge.converted == 1      # shouldn't happen here but just to be paranoid
-          transaction = api.spend(pledge.user.accounts.primary.first.address, pledge.pledge)
-          pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - pledge.pledge
+        proposal.pledges.unconverted.order(:created_at).each do |pledge|
+    
+          next if counter < 1
+          if pledge.pledge <= counter
+            next if pledge.converted == 1      # shouldn't happen here but just to be paranoid
+            # p 'converting pledge from ' + pledge.user.username + ' of ' + pledge.pledge.to_s
+            spent = pledge.pledge
+          elsif pledge.pledge > counter        # pledge overlaps what's needed so take just what's needed 
+            # p 'reducing pledge of ' + pledge.user.username + ' of ' + pledge.pledge.to_s
+            spent = counter
+            newpledge = Pledge.create(item: pledge.item, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
+            pledge.update_column(:pledge, counter)
+          end
+          pledge.update_column(:extra_info, 'Pledge spent at ' + Time.now.to_s)
+          pledge.update_column(:converted, 1)
+          counter -= spent
+          transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
+          pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
           pledge.user.update_balance_from_blockchain
-          pledge.converted = 1
           pledge.user.save(validate: false)
+
           et = nil
           while et.nil? do
             et = Ethtransaction.find_by(txaddress: transaction)
           end
 
-          proposal.activities <<  Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, description: "spent a pledge of #{pledge.pledge}#{ENV['currency_symbol']} on", extra_info: 'which was scheduled', addition: -1)    
+          proposal.activities <<  Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
+          description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
+          extra_info: 'which was scheduled', addition: -1)
+
+          
         end
         proposal.scheduled = true
         proposal.save!
+        self.spent_biathlon = true
       end
     end
   end
+  
+  
+  def in_future?
+    start_at >= Time.now
+  end
+  
+  def session_number
+    if new_record?
+      event.instances.order(:start_at).size + 1
+    else 
+      event.instances.order(:start_at).find_index(self) + 1
+    end
+  end
+  
+  def cost_in_temps
+    rate = Rate.get_current.experiment_cost
+    start = rate
+  
+    for f in 1..(session_number-1)  do 
+      inrate = rate
+      f.times do
+        inrate *= 0.9;
+      end
+      if inrate < 20
+        start = 20
+      else
+        start = inrate.round
+      end
+    end
+    return start
+  end
+  
   
   private
   

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160929110815) do
+ActiveRecord::Schema.define(version: 20161001152327) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -247,7 +247,7 @@ ActiveRecord::Schema.define(version: 20160929110815) do
   end
 
   create_table "instances", force: :cascade do |t|
-    t.integer  "event_id",             null: false
+    t.integer  "event_id",                             null: false
     t.integer  "cost_bb"
     t.float    "cost_euros"
     t.datetime "start_at"
@@ -260,12 +260,13 @@ ActiveRecord::Schema.define(version: 20160929110815) do
     t.integer  "image_width"
     t.integer  "image_size"
     t.string   "slug"
-    t.datetime "created_at",           null: false
-    t.datetime "updated_at",           null: false
+    t.datetime "created_at",                           null: false
+    t.datetime "updated_at",                           null: false
     t.string   "sequence"
     t.boolean  "is_meeting"
     t.integer  "proposal_id"
     t.boolean  "allow_multiple_entry"
+    t.boolean  "spent_biathlon",       default: false, null: false
     t.index ["event_id"], name: "index_instances_on_event_id", using: :btree
     t.index ["place_id"], name: "index_instances_on_place_id", using: :btree
     t.index ["proposal_id"], name: "index_instances_on_proposal_id", using: :btree
@@ -357,6 +358,7 @@ ActiveRecord::Schema.define(version: 20160929110815) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.datetime "deleted_at"
+    t.string   "extra_info"
     t.index ["item_type", "item_id"], name: "index_pledges_on_item_type_and_item_id", using: :btree
     t.index ["user_id"], name: "index_pledges_on_user_id", using: :btree
   end
@@ -396,14 +398,15 @@ ActiveRecord::Schema.define(version: 20160929110815) do
     t.string   "timeframe"
     t.text     "goals"
     t.string   "intended_participants"
-    t.datetime "created_at",                        null: false
-    t.datetime "updated_at",                        null: false
+    t.datetime "created_at",                            null: false
+    t.datetime "updated_at",                            null: false
     t.integer  "comment_count",         default: 0
     t.boolean  "notified"
     t.boolean  "scheduled"
     t.boolean  "allow_rescheduling"
     t.integer  "recurrence"
     t.integer  "intended_sessions"
+    t.boolean  "stopped",               default: false, null: false
     t.index ["user_id"], name: "index_proposals_on_user_id", using: :btree
   end
 
