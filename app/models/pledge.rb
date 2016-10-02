@@ -4,6 +4,6 @@ class Pledge < ApplicationRecord
   validates_presence_of :user_id, :pledge
   validates_numericality_of :pledge, greater_than_or_equal_to: 0
   
-  scope :unconverted, -> () { where('converted != 1')}
+  scope :unconverted, -> () { where('converted = 0 OR converted is null')}
   scope :converted, -> () { where(converted: true)}
 end
