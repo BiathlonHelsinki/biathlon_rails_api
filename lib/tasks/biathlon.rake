@@ -45,18 +45,18 @@ namespace :bidapp do
       end
     end
     
-    # # check external accounts
-    # api = BidappApi.new
-    # externals = Account.external.each do |acc|
-    #   api_data = api.api_post('/account_balance', {account: acc.address})
-    #   acc.balance = api_data.to_i rescue 0
-    #   if a.changed?
-    #     a.save
-    #     next if a.user.nil?
-    #     a.user.latest_balance = a.balance
-    #     a.user.save!
-    #   end
-    # end
+    # check external accounts
+    api = BidappApi.new
+    externals = Account.external.each do |acc|
+      api_data = api.api_post('/account_balance', {account: acc.address})
+      acc.balance = api_data.to_i rescue 0
+      if acc.changed?
+        acc.save
+        next if acc.user.nil?
+        acc.user.latest_balance = acc.balance
+        acc.user.save!
+      end      
+    end
   end
   
 end
