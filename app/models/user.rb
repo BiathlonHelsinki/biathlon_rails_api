@@ -108,22 +108,23 @@ class User < ActiveRecord::Base
       api = BidappApi.new
       begin
         transaction = api.mint(self.accounts.first.address, points)
+        accounts.first.balance = accounts.first.balance.to_i + points
+        instances_users << InstancesUser.new(instance: instance, visit_date: visit_date)
+        save(validate: false)
+        # get transaction hash and add to activity feed. TODO: move to concern!!
+        a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: Ethtransaction.find_by(txaddress: transaction), description: 'attended')
+        if a.save
+          return true
+        else
+          logger.warn('errors are ' + a.errors.inspect)
+          return false
+        end
       rescue
+        # don't write anything unless it goes to blockchain
         logger.warn('minting error')
       end
-      accounts.first.balance = accounts.first.balance.to_i + points
-      instances_users << InstancesUser.new(instance: instance, visit_date: visit_date)
-      save(validate: false)
-      
-      # get transaction hash and add to activity feed. TODO: move to concern!!
-      
-      a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: Ethtransaction.find_by(txaddress: transaction), description: 'attended')
-      if a.save
-        return true
-      else
-        logger.warn('errors are ' + a.errors.inspect)
-        return false
-      end
+
+
     # end
   end
 
