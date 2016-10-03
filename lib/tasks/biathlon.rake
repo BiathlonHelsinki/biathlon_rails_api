@@ -4,6 +4,11 @@ def get_feed(url = '')
   
 end
 
+def account_balance(url = '/account_balance', account)
+  response = HTTParty.post(Figaro.env.dapp_address + url, {account: account})
+  return response.parsed_response
+end
+
 namespace :bidapp do
   
   desc 'Confirm all unconfirmed Ethereum transactions'
@@ -29,7 +34,7 @@ namespace :bidapp do
   task sync_accounts: :environment do
     mainfeed = get_feed
     mainfeed['data']['accounts'].each do |acc|
-      a = Account.find_or_create_by(address: acc.first)
+      a = Account.where("external is not true").find_or_create_by(address: acc.first)
       a.balance = acc.last['biathlon'].to_i rescue 0
 
       if a.changed?
@@ -39,6 +44,19 @@ namespace :bidapp do
         a.user.save!
       end
     end
+    
+    # # check external accounts
+    # api = BidappApi.new
+    # externals = Account.external.each do |acc|
+    #   api_data = api.api_post('/account_balance', {account: acc.address})
+    #   acc.balance = api_data.to_i rescue 0
+    #   if a.changed?
+    #     a.save
+    #     next if a.user.nil?
+    #     a.user.latest_balance = a.balance
+    #     a.user.save!
+    #   end
+    # end
   end
   
 end

@@ -3,7 +3,7 @@ class Account < ApplicationRecord
   validate :only_one_primary
   
   scope :primary, -> () {  where(primary_account: true) }
-
+  scope :external, -> () { where(external: true) }
   
   def only_one_primary
     if primary_account == true
