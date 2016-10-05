@@ -2,7 +2,7 @@ class InstancesController < ApplicationController
   include ActiveHashRelation
   load_and_authorize_resource except: [:onetimer,  :user_attend, :today], find_by: :slug
   before_action :authenticate_user!, except: [:user_attend, :today, :onetimer]
-  before_action :authenticate_hardware!, only: [:user_attend, :onetimer]
+  before_action :authenticate_hardware!, only: [:user_attend,  :onetimer]
 
   
   def create
@@ -32,6 +32,8 @@ class InstancesController < ApplicationController
       render json: @onetimer.errors, status: :unprocessable_entity
     end
   end
+  
+
   
   def update
 

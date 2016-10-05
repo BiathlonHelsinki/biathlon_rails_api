@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161003145949) do
+ActiveRecord::Schema.define(version: 20161005081243) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -276,6 +276,9 @@ ActiveRecord::Schema.define(version: 20161003145949) do
     t.integer "instance_id", null: false
     t.integer "user_id",     null: false
     t.date    "visit_date"
+    t.integer "activity_id"
+    t.index ["activity_id"], name: "index_instances_users_on_activity_id", using: :btree
+    t.index ["user_id", "instance_id", "visit_date"], name: "index_instances_users_on_user_id_and_instance_id_and_visit_date", unique: true, using: :btree
   end
 
   create_table "nfcs", force: :cascade do |t|

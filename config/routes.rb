@@ -18,6 +18,7 @@ Rails.application.routes.draw do
     member do
       get :onetimer
     end
+
   end
 
   resources :users do
@@ -53,6 +54,7 @@ Rails.application.routes.draw do
     end
   end
   match '/users/:user_id/instances/:instance_id/user_attend/:visit_date' => 'instances#user_attend', via: :get
+  match '/instances/:instance_id/users/:user_id/resubmit/:id' => 'users#resubmit', via: :post
   match '/link_temporary_tag' => 'users#link_temporary_tag', via: :post
   match '/users/auth/:provider/callback' => 'authentications#create', :via => :get
   get '/queries/totalSupply'  => 'queries#total_supply'

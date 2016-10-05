@@ -3,7 +3,8 @@ class UsersController < ApplicationController
   
   #skip_before_filter :authenticate_user!, only: [:create]
   before_action :authenticate_hardware!, only: [:link_to_nfc]
-
+  before_action :authenticate_user!, only: [:resubmit]
+  
   def get_balance
     @user = User.friendly.find(params[:id])
     balance = 0
@@ -75,6 +76,48 @@ class UsersController < ApplicationController
       render json: {error: 'Card already belongs to user ' + existing.user.username + " (#{existing.user.name})"}, status: :unprocessable_entity
     end
   end
+  
+  def resubmit
+    # be very specific here
+    
+    @iu = InstancesUser.find_by(instance_id: params[:instance_id], id: params[:id], user_id: params[:user_id])  
+    if @iu.nil?
+      render json: {error: 'Cannot find this instance/user'}, status: :unprocessable_entity
+    else
+      activity = @iu.activity
+      ethtransaction = activity.ethtransaction
+      points = ethtransaction.value
+      logger.warn('attempting to resubmit to ' + @iu.user.accounts.first.address + ' for ' + points.to_s)
+      api = BidappApi.new
+      begin
+        
+        transaction = api.mint(@iu.user.accounts.first.address, points)
+        @iu.user.accounts.first.balance = @iu.user.accounts.first.balance.to_i + points
+        logger.warn('new transaction is ' + transaction)
+        sleep 3
+        neweth = Ethtransaction.find_by(txaddress: transaction)
+        if neweth
+          # ethtransaction.destroy
+          activity.ethtransaction = neweth
+          activity.save
+
+          render json: {data: activity.ethtransaction}, status: 200
+        else
+          logger.warn('new transaction is ' + transaction)
+          logger.warn('neweth should be ' + neweth.inspect)
+          logger.warn('error = ' + activity.errors.inspect)
+          render json: {error: 'errors are ' + activity.errors.inspect }, status: :unprocessable_entity
+
+        end
+      
+      rescue
+        # don't write anything unless it goes to blockchain
+        render json: {error: 'minting error'}, status: :unprocessable_entity
+      end
+    end
+    
+  end
+  
   
   def show
     user = User.find(params[:id])
