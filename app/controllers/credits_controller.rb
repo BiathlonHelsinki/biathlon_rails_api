@@ -7,7 +7,6 @@ class CreditsController < ApplicationController
   def create
     @credit = Credit.new(credit_params)
     if @credit.save
-      logger.warn('yeah')
       render json: {data: @credit.ethtransaction}, status: 200
     else
       render json: @credit.errors, status: :unprocessable_entity
@@ -24,6 +23,34 @@ class CreditsController < ApplicationController
   def index
     @credits = Credit.all.order(created_at: :desc)
   end
+  
+  def resubmit
+    @credit = Credit.find(params[:id])
+    if @credit.ethtransaction.confirmed != true
+      if @credit.ethtransaction.timeof < 15.minutes.ago
+        @credit.ethtransaction = nil
+        @credit.save
+        @credit.activities.each do |a|
+          if a.ethtransaction
+            if a.ethtransaction.confirmed != true
+              a.ethtransaction.destroy
+              a.destroy
+            end
+          end
+        end
+        if @credit.award_points
+          render json: {data: @credit.ethtransaction}, status: 200
+        else
+          render json: @credit.errors, status: :unprocessable_entity
+        end
+      else
+        render json: {error: 'Transaction is too recent, please wait 15 minutes and try again'},  status: :unprocessable_entity
+      end
+    else
+      render json: {error: 'You cannot resubmit a verified blockchain transaction'},  status: :unprocessable_entity
+    end
+  end
+
   
 
   def update

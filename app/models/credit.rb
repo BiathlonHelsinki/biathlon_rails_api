@@ -44,6 +44,7 @@ class Credit < ApplicationRecord
       logger.warn('error because of ' + user.errors.inspect)
     end
     # get transaction hash and add to activity feed. TODO: move to concern!!
+    sleep 2
     et = Ethtransaction.find_by(txaddress: transaction)
     self.ethtransaction = et
     
