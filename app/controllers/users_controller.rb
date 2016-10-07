@@ -86,7 +86,11 @@ class UsersController < ApplicationController
     else
       activity = @iu.activity
       ethtransaction = activity.ethtransaction
-      points = ethtransaction.value
+      if ethtransaction.nil?
+        points = @iu.instance.cost_bb
+      else
+        points = ethtransaction.value
+      end
       logger.warn('attempting to resubmit to ' + @iu.user.accounts.first.address + ' for ' + points.to_s)
       api = BidappApi.new
       begin
