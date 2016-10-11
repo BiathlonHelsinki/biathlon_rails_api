@@ -7,7 +7,7 @@ gem 'rails', '~> 5.0.0.1'
 # Use sqlite3 as the database for Active Record
 gem 'pg'
 # Use Puma as the app server
-gem 'puma', '~> 3.0'
+gem 'puma'
 # Build JSON APIs with ease. Read more: https://github.com/rails/jbuilder
 # gem 'jbuilder', '~> 2.5'
 # Use Redis adapter to run Action Cable in production
@@ -42,9 +42,9 @@ end
 
 gem 'capistrano'
 gem 'capistrano-rails'#, '1.1.3'
-gem 'rvm-capistrano'
+gem 'capistrano-rvm'
 gem 'capistrano-bundler'#, '1.1.4'
-
+gem 'capistrano3-puma'
 
 gem 'active_hash_relation'
 gem 'active_model_serializers'
