@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161012092429) do
+ActiveRecord::Schema.define(version: 20161012112947) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -477,7 +477,7 @@ ActiveRecord::Schema.define(version: 20161012092429) do
     t.integer  "avatar_size"
     t.integer  "avatar_width"
     t.integer  "avatar_height"
-    t.boolean  "opt_in"
+    t.boolean  "opt_in",                    default: true
     t.string   "website"
     t.text     "about_me"
     t.string   "twitter_name"
