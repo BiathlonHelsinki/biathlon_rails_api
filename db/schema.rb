@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161006084911) do
+ActiveRecord::Schema.define(version: 20161012092429) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -173,8 +173,8 @@ ActiveRecord::Schema.define(version: 20161006084911) do
     t.string   "slug"
     t.float    "cost_euros"
     t.integer  "cost_bb"
-    t.datetime "created_at",                       null: false
-    t.datetime "updated_at",                       null: false
+    t.datetime "created_at",                           null: false
+    t.datetime "updated_at",                           null: false
     t.string   "image"
     t.string   "image_content_type"
     t.integer  "image_size"
@@ -183,10 +183,11 @@ ActiveRecord::Schema.define(version: 20161006084911) do
     t.integer  "parent_id"
     t.integer  "lft"
     t.integer  "rgt"
-    t.integer  "depth",                default: 0, null: false
-    t.integer  "children_count",       default: 0, null: false
+    t.integer  "depth",                default: 0,     null: false
+    t.integer  "children_count",       default: 0,     null: false
     t.string   "sequence"
     t.integer  "proposal_id"
+    t.boolean  "collapse_in_website",  default: false, null: false
     t.index ["place_id"], name: "index_events_on_place_id", using: :btree
   end
 
