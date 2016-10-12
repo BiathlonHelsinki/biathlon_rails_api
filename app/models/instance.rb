@@ -54,10 +54,10 @@ class Instance < ApplicationRecord
   def spend_from_blockchain
     if published == true && spent_biathlon == false
       counter = cost_in_temps
+      activity_cache = Array.new
       if proposal
         api = BidappApi.new
-        proposal.pledges.unconverted.order(:created_at).each do |pledge|
-    
+        proposal.pledges.unconverted.order(:created_at).each do |pledge| 
           next if counter < 1
           if pledge.pledge <= counter
             next if pledge.converted == 1      # shouldn't happen here but just to be paranoid
@@ -82,15 +82,19 @@ class Instance < ApplicationRecord
             et = Ethtransaction.find_by(txaddress: transaction)
           end
 
-          proposal.activities <<  Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
+          a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
           description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
-          extra_info: 'which was scheduled as ', extra: self, addition: -1)
-
-          
+          extra_info: 'which was scheduled as ',  addition: -1)
+          activity_cache.push(a)
+        
         end
         proposal.scheduled = true
         proposal.save!
         self.spent_biathlon = true
+      end
+      activity_cache.each do |ac|
+        ac.extra = self
+        ac.save
       end
     end
   end
