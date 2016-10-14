@@ -3,7 +3,8 @@ class UsersController < ApplicationController
   
   #skip_before_filter :authenticate_user!, only: [:create]
   before_action :authenticate_hardware!, only: [:link_to_nfc]
-  before_action :authenticate_user!, only: [:resubmit]
+  before_action :authenticate_user!, only: [:resubmit, :respend]
+  before_action :authenticate_admin,  only: [:resubmit, :respend]
   
   def get_balance
     @user = User.friendly.find(params[:id])
@@ -97,7 +98,7 @@ class UsersController < ApplicationController
         
         transaction = api.mint(@iu.user.accounts.first.address, points)
         @iu.user.accounts.first.balance = @iu.user.accounts.first.balance.to_i + points
-        logger.warn('new transaction is ' + transaction)
+        # logger.warn('new transaction is ' + transaction)
         sleep 3
         neweth = Ethtransaction.find_by(txaddress: transaction)
         if neweth
@@ -122,6 +123,23 @@ class UsersController < ApplicationController
     
   end
   
+  def respend
+    @user = User.find(params[:id])
+    api = BidappApi.new
+    begin
+      transaction = api.spend(@user.accounts.first.address, params[:points])
+      sleep 2
+      neweth = Ethtransaction.find_by(txaddress: transaction)
+      if neweth
+        render json: {data: neweth}, status: 200
+      else
+        render json: {error: 'Could not save ethtransaction'}, status: :unprocessable_entity
+      end
+    rescue
+      render json: {error: 'spending error'}, status: :unprocessable_entity
+    end
+    
+  end
   
   def show
     user = User.find(params[:id])

@@ -19,6 +19,14 @@ class ApplicationController < ActionController::API
   #
   rescue_from ActiveRecord::RecordNotFound, with: :not_found
 
+  def authenticate_admin
+    if current_user.has_role?(:admin)
+      return true
+    else
+      render json: {error: 'access denied!'}, status: 401
+    end
+  end
+  
   def not_found
     render json: {error: 'record not found'}, status: 404
   end

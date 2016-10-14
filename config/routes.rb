@@ -8,6 +8,7 @@ Rails.application.routes.draw do
     end
   end
   
+
   resources :events do
     collection do
       get :today
@@ -29,6 +30,7 @@ Rails.application.routes.draw do
     member do
       post :link_to_nfc
       get :get_balance
+      post :respend
     end
     resources :transfers do
       collection do
