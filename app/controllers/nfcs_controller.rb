@@ -8,7 +8,7 @@ class NfcsController < ApplicationController
       @users = User.untagged.order(created_at: :desc)
     else
       @users = User.joins(:authentications).fuzzy_search({name: params[:q], email: params[:q], username: params[:q], authentications: { username: params[:q] }}, false)
-      @users += User.fuzzy_search(name: params[:q], username: params[:q])
+      @users += User.where("name like '%" + params[:q] + "%' OR email  LIKE '%" + params[:q] + "%' OR username LIKE '%" + params[:q] + "%'")
       @users.uniq!
     end
     render json: @users, status: 200
