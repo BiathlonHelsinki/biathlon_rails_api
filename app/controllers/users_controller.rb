@@ -95,7 +95,7 @@ class UsersController < ApplicationController
       else
         points = ethtransaction.value
       end
-      logger.warn('attempting to resubmit to ' + @iu.user.accounts.first.address + ' for ' + points.to_s)
+      # logger.warn('attempting to resubmit to ' + @iu.user.accounts.first.address + ' for ' + points.to_s)
       api = BidappApi.new
       begin
         
@@ -111,9 +111,9 @@ class UsersController < ApplicationController
 
           render json: {data: activity.ethtransaction}, status: 200
         else
-          logger.warn('new transaction is ' + transaction)
-          logger.warn('neweth should be ' + neweth.inspect)
-          logger.warn('error = ' + activity.errors.inspect)
+          # logger.warn('new transaction is ' + transaction)
+          # logger.warn('neweth should be ' + neweth.inspect)
+          # logger.warn('error = ' + activity.errors.inspect)
           render json: {error: 'errors are ' + activity.errors.inspect }, status: :unprocessable_entity
 
         end

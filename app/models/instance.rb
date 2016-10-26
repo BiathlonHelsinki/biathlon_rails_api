@@ -84,7 +84,7 @@ class Instance < ApplicationRecord
 
           a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
           description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
-          extra_info: 'which was scheduled as ',  addition: -1)
+          extra_info: 'which was scheduled as ',  addition: -1, txaddress: transaction)
           activity_cache.push(a)
         
         end

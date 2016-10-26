@@ -34,7 +34,7 @@ class TransfersController < ApplicationController
         #   break if !et.nil?
         # end
         a = Activity.create(user: recipient, item: current_user,
-          ethtransaction: et, addition: 0,
+          ethtransaction: et, addition: 0, txaddress: JSON.parse(transaction)['data'],
           description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})"
           )
         sender.update_balance_from_blockchain

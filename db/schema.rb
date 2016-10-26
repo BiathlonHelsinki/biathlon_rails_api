@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161026073523) do
+ActiveRecord::Schema.define(version: 20161026092130) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -41,6 +41,7 @@ ActiveRecord::Schema.define(version: 20161026073523) do
     t.integer  "addition",          default: 0, null: false
     t.string   "extra_type"
     t.integer  "extra_id"
+    t.string   "txaddress"
     t.index ["ethtransaction_id"], name: "index_activities_on_ethtransaction_id", using: :btree
     t.index ["extra_type", "extra_id"], name: "index_activities_on_extra_type_and_extra_id", using: :btree
     t.index ["item_type", "item_id"], name: "index_activities_on_item_type_and_item_id", using: :btree
