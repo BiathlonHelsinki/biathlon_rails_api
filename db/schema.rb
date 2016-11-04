@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161026100035) do
+ActiveRecord::Schema.define(version: 20161104103640) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -374,10 +374,11 @@ ActiveRecord::Schema.define(version: 20161026100035) do
     t.integer  "pledge"
     t.string   "comment"
     t.integer  "converted"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
     t.datetime "deleted_at"
     t.string   "extra_info"
+    t.integer  "instance_id"
     t.index ["item_type", "item_id"], name: "index_pledges_on_item_type_and_item_id", using: :btree
     t.index ["user_id"], name: "index_pledges_on_user_id", using: :btree
   end

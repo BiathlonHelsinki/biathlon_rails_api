@@ -9,6 +9,7 @@ class Instance < ApplicationRecord
   validates_presence_of :place_id, :start_at
   validates_uniqueness_of :sequence
   belongs_to :proposal
+  has_many :pledges
   has_many :instances_users
   has_many :users, through: :instances_users
   has_many :onetimers, dependent: :destroy
@@ -55,6 +56,7 @@ class Instance < ApplicationRecord
     if published == true && spent_biathlon == false
       counter = cost_in_temps
       activity_cache = Array.new
+      pledge_cache = Array.new
       if proposal
         api = BidappApi.new
         proposal.pledges.unconverted.order(:created_at).each do |pledge| 
@@ -71,12 +73,13 @@ class Instance < ApplicationRecord
           end
           pledge.update_column(:extra_info, 'Pledge spent at ' + Time.now.to_s)
           pledge.update_column(:converted, 1)
+          pledge_cache.push(pledge)
           counter -= spent
           transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
           pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
           pledge.user.update_balance_from_blockchain
           pledge.user.save(validate: false)
-
+          
           et = nil
           while et.nil? do
             et = Ethtransaction.find_by(txaddress: transaction)
@@ -93,8 +96,12 @@ class Instance < ApplicationRecord
         self.spent_biathlon = true
       end
       activity_cache.each do |ac|
-        ac.extra = self
+        ac.extra = self        
         ac.save
+      end
+      pledge_cache.each do |pc|
+        pc.instance = self
+        pc.save
       end
     end
   end
