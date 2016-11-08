@@ -70,8 +70,8 @@ class InstancesController < ApplicationController
   def instance_params
     
     the_params = params.require(:instance).permit(:published, :event_id, :place_id, :primary_sponsor_id, :is_meeting, :proposal_id,
-    :secondary_sponsor_id, :cost_euros, :cost_bb, :sequence, :start_at, :end_at, :sequence, :allow_multiple_entry,
-    :parent_id, :image, translations_attributes: [:name, :description, :locale, :id]
+    :secondary_sponsor_id, :cost_euros, :cost_bb, :sequence, :start_at, :end_at, :sequence, :allow_multiple_entry, :request_rsvp, 
+    :request_registration, :parent_id, :image, translations_attributes: [:name, :description, :locale, :id]
     )
     the_params[:image] = parse_image_data(the_params[:image]) if the_params[:image]
     the_params
