@@ -6,7 +6,15 @@ class BidappApi
   def api_call(url = '/')
     response = HTTParty.get(API_URL + url)
     # TODO more error checking (500 error, etc)
-    JSON.parse(response.body)['data']
+    begin
+      if response.body['error']
+        JSON.parse(response.body)['error']
+      else
+        JSON.parse(response.body)['data']
+      end
+    rescue e
+      return e
+    end
   end
   
   def api_post(url = '/', options)
@@ -27,7 +35,11 @@ class BidappApi
   
   def mint(recipient, tokens) 
     response = HTTParty.post(API_URL + '/mint', body: {recipient: recipient, tokens: tokens} )
-    JSON.parse(response.body)['data']
+    begin
+      JSON.parse(response.body)
+    rescue e
+      return e
+    end
   end
 
   def spend(spender, tokens)
