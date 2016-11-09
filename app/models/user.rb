@@ -112,9 +112,9 @@ class User < ActiveRecord::Base
         if transaction['data']
           accounts.first.balance = accounts.first.balance.to_i + points
           sleep 1
-          e = Ethtransaction.find_by(txaddress: transaction)
+          e = Ethtransaction.find_by(txaddress: transaction['data'])
           # get transaction hash and add to activity feed. TODO: move to concern!!
-          a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: e.nil? ? nil : e, description: 'attended', txaddress: transaction)
+          a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: e.nil? ? nil : e, description: 'attended', txaddress: transaction['data'])
           if a.save
 
             instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
@@ -130,7 +130,7 @@ class User < ActiveRecord::Base
       rescue
         # don't write anything unless it goes to blockchain
         logger.warn('minting error' + transaction.inspect)
-        return transaction
+        return transactions
       end
 
 
