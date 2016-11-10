@@ -130,7 +130,7 @@ class User < ActiveRecord::Base
       rescue
         # don't write anything unless it goes to blockchain
         logger.warn('minting error' + transaction.inspect)
-        return transactions
+        return transaction
       end
 
 
