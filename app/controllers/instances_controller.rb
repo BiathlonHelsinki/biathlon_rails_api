@@ -59,7 +59,7 @@ class InstancesController < ApplicationController
 
     
     transaction = @user.award_points(event, event.cost_bb, visit_date.to_s)
-    if JSON.parse(transaction.to_json)['status'] == 'error'
+    if transaction
       render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
     else
       render json: @user, status: 200, location: @user
