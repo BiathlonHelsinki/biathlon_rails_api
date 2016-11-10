@@ -108,7 +108,7 @@ class User < ActiveRecord::Base
       api = BidappApi.new
       begin
         transaction = api.mint(self.accounts.first.address, points)
-        logger.warn('transaction is ' + transaction)
+        logger.warn('transaction is ' + transaction.inspect)
         if transaction['data']
           accounts.first.balance = accounts.first.balance.to_i + points
           sleep 1
@@ -129,7 +129,7 @@ class User < ActiveRecord::Base
         end
       rescue Exception => e
         # don't write anything unless it goes to blockchain
-        logger.warn('minting error' + e)
+        logger.warn('minting error' + e.inspect)  
         return transaction
       end
 
