@@ -52,17 +52,15 @@ class InstancesController < ApplicationController
     event = Instance.friendly.find(params[:id])
     if params[:visit_date]
       visit_date = params[:visit_date]
-    else      
-      
+    else   
       visit_date = Time.now.to_date
     end
 
-    
     transaction = @user.award_points(event, event.cost_bb, visit_date.to_s)
-    if transaction
-      render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
-    else
+    if transaction        
       render json: @user, status: 200, location: @user
+    else
+      render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
     end
   end
   
