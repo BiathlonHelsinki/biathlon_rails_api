@@ -127,9 +127,9 @@ class User < ActiveRecord::Base
         elsif transaction['error']
           return transaction['error']
         end
-      rescue
+      rescue Exception => e
         # don't write anything unless it goes to blockchain
-        logger.warn('minting error' + transaction.inspect)
+        logger.warn('minting error' + e)
         return transaction
       end
 
