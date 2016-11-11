@@ -45,7 +45,7 @@ class Credit < ApplicationRecord
     end
     # get transaction hash and add to activity feed. TODO: move to concern!!
     sleep 2
-    et = Ethtransaction.find_by(txaddress: transaction)
+    et = Ethtransaction.find_by(txaddress: transaction['data'])
     self.ethtransaction = et
     
     activities <<  Activity.new(user: user, item: self, ethtransaction_id: et.id, description: 'was credited for', addition: 1)
