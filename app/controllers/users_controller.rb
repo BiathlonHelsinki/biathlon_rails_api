@@ -103,7 +103,7 @@ class UsersController < ApplicationController
         @iu.user.accounts.first.balance = @iu.user.accounts.first.balance.to_i + points
         # logger.warn('new transaction is ' + transaction)
         sleep 3
-        neweth = Ethtransaction.find_by(txaddress: transaction)
+        neweth = Ethtransaction.find_by(txaddress: transaction['data'])
         if neweth
           # ethtransaction.destroy
           activity.ethtransaction = neweth
