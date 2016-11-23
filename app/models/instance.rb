@@ -1,4 +1,5 @@
 class Instance < ApplicationRecord
+
   belongs_to :event, foreign_key: 'event_id'
   belongs_to :place
   translates :name, :description, :fallbacks_for_empty_translations => true

@@ -1,4 +1,5 @@
 class Event < ApplicationRecord
+
   acts_as_nested_set
   has_many :instances, dependent: :destroy
   belongs_to :place

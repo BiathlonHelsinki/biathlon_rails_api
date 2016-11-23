@@ -1,5 +1,6 @@
 class EventsController < ApplicationController
   include ActiveHashRelation
+
   load_and_authorize_resource except: [:onetimer,  :user_attend, :today]
   before_action :authenticate_user!, except: [:user_attend, :today, :onetimer]
   before_action :authenticate_hardware!, only: [:user_attend, :onetimer]
@@ -18,7 +19,10 @@ class EventsController < ApplicationController
     # need to fix for multiple day events
     @events = Instance.has_instance_on(Time.now.to_date)
 
-    render json: {"data" => @events}, status: 200
+    # render json: {"data" => @events}, status: 200
+    render(
+      json: @events, each_serializer: InstanceSerializer
+      )
   end
     
   def update

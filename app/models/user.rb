@@ -98,41 +98,53 @@ class User < ActiveRecord::Base
     # else
       # check if user has ethereum account yet
       if accounts.empty?
-        create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
-        unless JSON.parse(create_call.body)['data'].blank?
-          accounts << Account.create(address: JSON.parse(create_call.body)['data'])
-        end
-      end
-      
-      # account is created in theory, so now let's do the transaction
-      api = BidappApi.new
-      begin
-        transaction = api.mint(self.accounts.first.address, points)
-        logger.warn('transaction is ' + transaction.inspect)
-        if transaction['data']
-          accounts.first.balance = accounts.first.balance.to_i + points
-          sleep 1
-          e = Ethtransaction.find_by(txaddress: transaction['data'])
-          # get transaction hash and add to activity feed. TODO: move to concern!!
-          a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: e.nil? ? nil : e, description: 'attended', txaddress: transaction['data'])
-          if a.save
-
-            instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
-            save
-            return true
+        begin
+          create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
+          if JSON.parse(create_call.body)['data'].blank?
+            logger.warn('error is ' + JSON.parse(create_call.body)['error'].inspect)
+            exit
           else
-            logger.warn('errors are ' + a.errors.inspect)
-            return false
+            accounts << Account.create(address: JSON.parse(create_call.body)['data'])
           end
-        elsif transaction['error']
-          return transaction['error']
+        rescue Exception => e
+          
+          error = e
         end
-      rescue Exception => e
-        # don't write anything unless it goes to blockchain
-        logger.warn('minting error' + e.inspect)  
-        return transaction
       end
+      if error.nil?
+        # account is created in theory, so now let's do the transaction
+        api = BidappApi.new
+        begin
+          transaction = api.mint(self.accounts.first.address, points)
+          logger.warn('transaction is ' + transaction.inspect)
+          if transaction['data']
+            accounts.first.balance = accounts.first.balance.to_i + points
+            sleep 1
+            e = Ethtransaction.find_by(txaddress: transaction['data'])
+            # get transaction hash and add to activity feed. TODO: move to concern!!
+            a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: e.nil? ? nil : e, description: 'attended', txaddress: transaction['data'])
+            if a.save
 
+              instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
+              save
+              return true
+            else
+              logger.warn('errors are ' + a.errors.inspect)
+              return false
+            end
+          elsif transaction['error']
+            return transaction['error']
+          end
+        rescue Exception => e
+          # don't write anything unless it goes to blockchain
+          logger.warn('minting error' + e.inspect)  
+          return transaction
+        end
+      else
+        logger.warn('got here')
+        self.errors.add(:base, error.inspect)
+        return false
+      end
 
     # end
   end

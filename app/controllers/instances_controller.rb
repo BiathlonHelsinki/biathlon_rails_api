@@ -60,6 +60,7 @@ class InstancesController < ApplicationController
     if transaction        
       render json: @user, status: 200, location: @user
     else
+      logger.warn(@user.errors.as_json(full_messages: true))
       render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
     end
   end
