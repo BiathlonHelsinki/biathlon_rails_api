@@ -85,12 +85,12 @@ class Instance < ApplicationRecord
           
               et = nil
               while et.nil? do
-                et = Ethtransaction.find_by(txaddress: transaction)
+                et = Ethtransaction.find_by(txaddress: transaction['data'])
               end
 
               a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
               description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
-              extra_info: 'which was scheduled as ',  addition: -1, txaddress: transaction)
+              extra_info: 'which was scheduled as ',  addition: -1, txaddress: transaction['data'])
               activity_cache.push(a)
             elsif transaction['error']
               return transaction['error']
