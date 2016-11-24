@@ -76,21 +76,30 @@ class Instance < ApplicationRecord
           pledge.update_column(:converted, 1)
           pledge_cache.push(pledge)
           counter -= spent
-          transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
-          pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
-          pledge.user.update_balance_from_blockchain
-          pledge.user.save(validate: false)
+          begin
+            transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
+            if transaction['data']
+              pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
+              pledge.user.update_balance_from_blockchain
+              pledge.user.save(validate: false)
           
-          et = nil
-          while et.nil? do
-            et = Ethtransaction.find_by(txaddress: transaction)
-          end
+              et = nil
+              while et.nil? do
+                et = Ethtransaction.find_by(txaddress: transaction)
+              end
 
-          a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
-          description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
-          extra_info: 'which was scheduled as ',  addition: -1, txaddress: transaction)
-          activity_cache.push(a)
-        
+              a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
+              description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
+              extra_info: 'which was scheduled as ',  addition: -1, txaddress: transaction)
+              activity_cache.push(a)
+            elsif transaction['error']
+              return transaction['error']
+            end
+          rescue Exception => e
+            # don't write anything unless it goes to blockchain
+            logger.warn('spending error' + e.inspect)  
+            return transaction
+          end
         end
         proposal.scheduled = true
         proposal.save!

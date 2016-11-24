@@ -44,7 +44,12 @@ class BidappApi
 
   def spend(spender, tokens)
     response = HTTParty.post(API_URL + '/spend', body: {sender: spender, tokens: tokens} )
-    JSON.parse(response.body)['data']
+    begin
+      JSON.parse(response.body)
+    rescue e
+      return e
+    end
+    # JSON.parse(response.body)['data']
   end
   
   def transfer_user(sender, recipient, tokens, password) 
