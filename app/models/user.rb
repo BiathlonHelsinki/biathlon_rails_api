@@ -114,18 +114,26 @@ class User < ActiveRecord::Base
       if error.nil?
         # account is created in theory, so now let's do the transaction
         api = BidappApi.new
+
         begin
+          # 1. make activity first with blank transaction
+          a = Activity.create(user: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended')
+          
+          # 2. make instance_user
+          instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
+          
+          # 3. submit transaction, get hash
+
           transaction = api.mint(self.accounts.first.address, points)
-          logger.warn('transaction is ' + transaction.inspect)
+
           if transaction['data']
             accounts.first.balance = accounts.first.balance.to_i + points
             sleep 1
             e = Ethtransaction.find_by(txaddress: transaction['data'])
-            # get transaction hash and add to activity feed. TODO: move to concern!!
-            a = Activity.new(user: self, item: instance, addition: 1, ethtransaction: e.nil? ? nil : e, description: 'attended', txaddress: transaction['data'])
+            
+            # 4. add hash to activity
+            a.ethtransaction = e
             if a.save
-
-              instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
               save
               return true
             else
@@ -137,11 +145,11 @@ class User < ActiveRecord::Base
           end
         rescue Exception => e
           # don't write anything unless it goes to blockchain
-          logger.warn('minting error' + e.inspect)  
+          logger.warn('minting error: ' + e.inspect)  
           return transaction
         end
       else
-        logger.warn('got here')
+
         self.errors.add(:base, error.inspect)
         return false
       end
