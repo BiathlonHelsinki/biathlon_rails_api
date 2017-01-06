@@ -130,9 +130,10 @@ class User < ActiveRecord::Base
             accounts.first.balance = accounts.first.balance.to_i + points
             sleep 1
             e = Ethtransaction.find_by(txaddress: transaction['data'])
-            
+
             # 4. add hash to activity
             a.ethtransaction = e
+            a.txaddress = transaction['data']
             if a.save
               save
               return true
