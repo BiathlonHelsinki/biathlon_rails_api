@@ -24,7 +24,7 @@ class User < ActiveRecord::Base
   scope :untagged, -> () { includes(:nfcs).where( nfcs: {user_id: nil}) }
   mount_uploader :avatar, ImageUploader
   before_save :update_avatar_attributes
-  validates_presence_of :geth_pwd
+  # validates_presence_of :geth_pwd
   has_and_belongs_to_many :events  
 
 
