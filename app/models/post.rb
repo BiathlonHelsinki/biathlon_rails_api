@@ -8,7 +8,7 @@ class Post < ApplicationRecord
   before_save :update_image_attributes
   before_save :check_published
   mount_uploader :image, ImageUploader
-  
+  has_many :activities, as: :item, dependent: :destroy
   scope :published, -> () { where(published: true) }
   def title_en
     self.title(:en)

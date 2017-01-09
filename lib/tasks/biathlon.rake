@@ -59,4 +59,73 @@ namespace :bidapp do
     end
   end
   
+
+  desc 'audit user accounts on blockchain'
+  task audit_users: :environment  do
+    api = BidappApi.new
+    User.all.order(:id).each do |user|
+      unless user.all_activities.empty?
+        total = 0
+        plus = user.all_activities.select{|x| x.addition == 1}.sum{|x| x.value.to_i} 
+        minus =  user.all_activities.select{|x| x.addition == -1}.sum{|x| x.value.to_i}
+        plus2 = user.all_activities.select{|x| x.description =~ /received/ && x.user == user }.sum{|x| x.value.to_i}
+        minus2 = user.all_activities.select{|x| x.description =~ /received/ && x.item == user }.sum{|x| x.value.to_i}
+        total += plus
+        total += plus2
+        total -= minus
+        total -= minus2
+        if user.latest_balance != total
+          p "User #{user.display_name} (id# #{user.id.to_s}: Balance is #{user.latest_balance.to_s}, should be #{total.to_s}"
+          if user.latest_balance > total
+            # too many, let's delete some
+            p '  -- will delete ' + (user.latest_balance - total).to_s + ' from blockchain balance'
+            begin
+              transaction = api.spend(user.accounts.primary.first.address, user.latest_balance - total)
+              if transaction['data']
+                et = nil
+                sleep 2
+                while et.nil? do
+                  et = Ethtransaction.find_by(txaddress: transaction['data'])
+                end
+                a = Activity.create(user: user, item_type: 'Post', item_id: 8, ethtransaction_id: et.id, 
+                description: "had their blockchain balance adjusted by -#{user.latest_balance - total}#{ENV['currency_symbol']}", 
+                addition: 0, txaddress: transaction['data'])
+              elsif transaction['error']
+                return transaction['error']
+              end
+            rescue Exception => e
+              # don't write anything unless it goes to blockchain
+              logger.warn('spending error' + e.inspect)  
+              return transaction
+            end  
+          elsif user.latest_balance < total
+            p '  -- will add ' + (total - user.latest_balance).to_s + ' from blockchain balance'
+            begin
+              transaction = api.mint(user.accounts.first.address, total - user.latest_balance)
+              if transaction['data']
+                et = nil
+                sleep 2
+                while et.nil? do
+                  et = Ethtransaction.find_by(txaddress: transaction['data'])
+                end
+                a = Activity.create(user: user, item_type: 'Post', item_id: 8, ethtransaction_id: et.id, 
+                description: "had their blockchain balance adjusted by +#{total - user.latest_balance}#{ENV['currency_symbol']}", 
+                addition: 0, txaddress: transaction['data'])
+              elsif transaction['error']
+                return transaction['error']
+              end
+            rescue Exception => e
+              # don't write anything unless it goes to blockchain
+              logger.warn('spending error' + e.inspect)  
+              return transaction
+            end  
+          end
+        end
+      end
+    end
+  end
+
+
+  
+  
 end

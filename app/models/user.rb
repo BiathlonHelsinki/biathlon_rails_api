@@ -18,13 +18,15 @@ class User < ActiveRecord::Base
   has_many :onetimers
   has_many :nfcs
   # has_and_belongs_to_many :events
-  has_many :activities, as: :item
+  # has_many :activities, as: :item
   has_many :instances_users
   has_many :instances, through: :instances_users
   scope :untagged, -> () { includes(:nfcs).where( nfcs: {user_id: nil}) }
   mount_uploader :avatar, ImageUploader
   before_save :update_avatar_attributes
   validates_presence_of :geth_pwd
+  has_and_belongs_to_many :events  
+
 
 
   def events_attended
@@ -54,7 +56,7 @@ class User < ActiveRecord::Base
   end
   
   def all_activities
-    [activities, Activity.where(item: self)].flatten.compact
+    [activities, Activity.where(item: self)].flatten.compact.uniq    
   end
   
   def available_balance
@@ -212,7 +214,16 @@ class User < ActiveRecord::Base
      pledges.to_a.delete_if{|x| x.converted == 1}
    end
    
-   
+  
+   def display_name
+     if show_name == true
+       "#{name} (#{username})"
+     else
+       username
+     end
+   end
+  
+  
   def apply_omniauth(omniauth)
     if omniauth['provider'] == 'twitter'
       logger.warn(omniauth.inspect)
