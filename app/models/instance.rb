@@ -130,21 +130,25 @@ class Instance < ApplicationRecord
   end
   
   def cost_in_temps
-    rate = Rate.get_current.experiment_cost
-    start = rate
+    if custom_bb_fee
+      return custom_bb_fee
+    else
+      rate = Rate.get_current.experiment_cost
+      start = rate
   
-    for f in 1..(session_number-1)  do 
-      inrate = rate
-      f.times do
-        inrate *= 0.9;
+      for f in 1..(session_number-1)  do 
+        inrate = rate
+        f.times do
+          inrate *= 0.9;
+        end
+        if inrate < 20
+          start = 20
+        else
+          start = inrate.round
+        end
       end
-      if inrate < 20
-        start = 20
-      else
-        start = inrate.round
-      end
+      return start
     end
-    return start
   end
   
   
