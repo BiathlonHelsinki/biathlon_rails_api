@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20161107085136) do
+ActiveRecord::Schema.define(version: 20170116121344) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -286,6 +286,7 @@ ActiveRecord::Schema.define(version: 20161107085136) do
     t.boolean  "spent_biathlon",       default: false, null: false
     t.boolean  "request_rsvp"
     t.boolean  "request_registration"
+    t.float    "custom_bb_fee"
     t.index ["event_id"], name: "index_instances_on_event_id", using: :btree
     t.index ["place_id"], name: "index_instances_on_place_id", using: :btree
     t.index ["proposal_id"], name: "index_instances_on_proposal_id", using: :btree
@@ -430,7 +431,24 @@ ActiveRecord::Schema.define(version: 20161107085136) do
     t.integer  "recurrence"
     t.integer  "intended_sessions"
     t.boolean  "stopped",               default: false, null: false
+    t.integer  "proposalstatus_id"
     t.index ["user_id"], name: "index_proposals_on_user_id", using: :btree
+  end
+
+  create_table "proposalstatus_translations", force: :cascade do |t|
+    t.integer  "proposalstatus_id", null: false
+    t.string   "locale",            null: false
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+    t.string   "name"
+    t.index ["locale"], name: "index_proposalstatus_translations_on_locale", using: :btree
+    t.index ["proposalstatus_id"], name: "index_proposalstatus_translations_on_proposalstatus_id", using: :btree
+  end
+
+  create_table "proposalstatuses", force: :cascade do |t|
+    t.string   "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "rates", force: :cascade do |t|

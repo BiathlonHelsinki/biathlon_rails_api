@@ -7,6 +7,7 @@ class Proposal < ApplicationRecord
   validates_presence_of :user_id, :name
   has_many :comments, as: :item, :dependent => :destroy
   has_many :instances
+  belongs_to :proposalstatus
   has_many :activities, as: :item, dependent: :destroy
   def self.schedulable
     all.to_a.delete_if{|x| x.pledged < Rate.get_current.experiment_cost }
