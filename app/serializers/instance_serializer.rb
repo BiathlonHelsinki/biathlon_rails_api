@@ -1,6 +1,10 @@
 class InstanceSerializer < ActiveModel::Serializer
   attributes :id, :name, :start_at, :end_at, :description, :cost_bb, :image
 
+  def name
+    object.name[0..20].gsub(/\s\w+\s*$/, '...')
+  end
+  
   def image
     object.image.blank? ? object.event.image : object.image
   end
