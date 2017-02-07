@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170116121344) do
+ActiveRecord::Schema.define(version: 20170207111610) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -305,10 +305,11 @@ ActiveRecord::Schema.define(version: 20170116121344) do
     t.integer  "user_id"
     t.string   "tag_address",   limit: 20
     t.boolean  "active"
-    t.datetime "created_at",               null: false
-    t.datetime "updated_at",               null: false
+    t.datetime "created_at",                               null: false
+    t.datetime "updated_at",                               null: false
     t.string   "security_code"
     t.datetime "last_used"
+    t.boolean  "keyholder",                default: false, null: false
     t.index ["tag_address"], name: "index_nfcs_on_tag_address", unique: true, using: :btree
     t.index ["user_id"], name: "index_nfcs_on_user_id", using: :btree
   end

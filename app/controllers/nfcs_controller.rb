@@ -1,7 +1,25 @@
 class NfcsController < ApplicationController
 
   skip_before_action :authenticate_user!, raise: false
-  before_action :authenticate_hardware!, only: [:unattached_users, :erase_tag]
+  before_action :authenticate_hardware!, only: [:unattached_users, :auth_door, :erase_tag]
+  
+  def auth_door
+    if params[:securekey] == '00000000'
+      render json: {error: 'No security key on card'}, status: 401
+    else
+      @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
+      
+    end
+    if @nfc.nil?
+      render json: {error: 'no card found in db!'}, status: 401
+    else
+      if @nfc.keyholder == true
+        render json: {data: 'UNLOCK'}, status: 200
+      else
+        render json: {error: 'No user found with this tag!'}, status: 401
+      end
+    end
+  end
   
   def unattached_users
     if params[:q].blank?
