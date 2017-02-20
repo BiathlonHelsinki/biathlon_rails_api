@@ -38,6 +38,7 @@ Rails.application.routes.draw do
       end
     end
     resources :events
+    resources :roombookings
     resources :instances do
       member do
         get :user_attend
@@ -50,6 +51,8 @@ Rails.application.routes.draw do
       post :add_provider
     end
   end
+
+  
   resources :nfcs do
     collection do 
       get :unattached_users
