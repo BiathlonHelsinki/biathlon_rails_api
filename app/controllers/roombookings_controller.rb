@@ -8,31 +8,37 @@ class RoombookingsController < ApplicationController
     @current_rate = Rate.get_current
     @roombooking = Roombooking.new(user: @user, rate: @current_rate, day: params[:day], purpose: params[:purpose])
     api = BidappApi.new
-    begin
-     
-      transaction = api.spend(@user.accounts.first.address, @current_rate.room_cost)
+    @user.update_balance_from_blockchain
+    if @user.latest_balance < @current_rate.room_cost
+      render json: { error: 'You do not have enough Temps to do this'}, status: 400
+    else
+      begin
 
-      if transaction['error']
-        render json: {error: transaction['error']}, status: 400
-      else
-        sleep 2
-        et = Ethtransaction.find_by(txaddress: transaction['data'])
-        @roombooking.ethtransaction = et
-        if @roombooking.save
-          a = Activity.create(user: @user, item: @roombooking,
-            ethtransaction: et, addition: -1, txaddress: transaction['data'],
-            description: "booked the back room on ", 
-            extra_info: params[:purpose].blank? ? nil : " (for: #{params[:purpose]})"
-          )
-          render json: {data: transaction['data']}, status: 200
+        transaction = api.spend(@user.accounts.first.address, @current_rate.room_cost)
+
+        if transaction['error']
+          render json: {error: transaction['error']}, status: 400
         else
-          render json: {error: @roombooking.errors.inspect }, status: :unprocessable_entity
+          sleep 2
+          et = Ethtransaction.find_by(txaddress: transaction['data'])
+          @roombooking.ethtransaction = et
+          if @roombooking.save
+            a = Activity.create(user: @user, item: @roombooking,
+              ethtransaction: et, addition: -1, txaddress: transaction['data'],
+              description: "booked the back room on ", 
+              extra_info: params[:purpose].blank? ? nil : " (for: #{params[:purpose]})"
+            )
+            @user.update_balance_from_blockchain
+            render json: {data: transaction['data']}, status: 200
+          else
+            render json: {error: @roombooking.errors.inspect }, status: :unprocessable_entity
+          end
         end
-      end
-    rescue => e
-      logger.warn('txdadta is ' + et.inspect + ' and errs are ' + e.inspect)
-      render json: {error: e.inspect }, status: :unprocessable_entity
-    end  
+      rescue => e
+        logger.warn('txdadta is ' + et.inspect + ' and errs are ' + e.inspect)
+        render json: {error: e.inspect }, status: :unprocessable_entity
+      end 
+    end 
   end
   
 end
