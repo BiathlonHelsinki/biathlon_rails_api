@@ -14,7 +14,7 @@ class NfcsController < ApplicationController
       render json: {error: 'no card found in db!'}, status: 401
     else
       if @nfc.keyholder == true
-        render json: {data: 'UNLOCK'}, status: 200
+        render json: {data: @nfc.user}, status: 200
       else
         render json: {error: 'No user found with this tag!'}, status: 401
       end
