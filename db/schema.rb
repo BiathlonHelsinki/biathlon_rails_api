@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170220101741) do
+ActiveRecord::Schema.define(version: 20170227120203) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -314,6 +314,14 @@ ActiveRecord::Schema.define(version: 20170220101741) do
     t.index ["user_id"], name: "index_nfcs_on_user_id", using: :btree
   end
 
+  create_table "nodes", force: :cascade do |t|
+    t.string   "name"
+    t.string   "slug"
+    t.boolean  "is_open",    default: false, null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+  end
+
   create_table "onetimers", force: :cascade do |t|
     t.integer  "instance_id"
     t.string   "code",        limit: 7
@@ -324,6 +332,16 @@ ActiveRecord::Schema.define(version: 20170220101741) do
     t.index ["code"], name: "index_onetimers_on_code", unique: true, using: :btree
     t.index ["instance_id"], name: "index_onetimers_on_instance_id", using: :btree
     t.index ["user_id"], name: "index_onetimers_on_user_id", using: :btree
+  end
+
+  create_table "opensessions", force: :cascade do |t|
+    t.integer  "node_id",    null: false
+    t.datetime "opened_at"
+    t.datetime "closed_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["node_id"], name: "index_opensessions_on_node_id", using: :btree
+    t.index ["node_id"], name: "null_valid_from", unique: true, where: "(closed_at IS NULL)", using: :btree
   end
 
   create_table "page_translations", force: :cascade do |t|
@@ -578,6 +596,7 @@ ActiveRecord::Schema.define(version: 20170220101741) do
   add_foreign_key "instances", "places"
   add_foreign_key "nfcs", "users"
   add_foreign_key "onetimers", "users"
+  add_foreign_key "opensessions", "nodes"
   add_foreign_key "pledges", "users"
   add_foreign_key "posts", "users"
   add_foreign_key "proposals", "users"

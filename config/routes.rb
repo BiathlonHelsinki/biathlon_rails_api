@@ -45,6 +45,16 @@ Rails.application.routes.draw do
       end
     end
   end
+  
+  resources :nodes do
+    resources :opensessions do
+      collection do
+        get :open
+        get :close
+      end
+    end
+  end
+  
       
   resources :authentications do
     collection do
