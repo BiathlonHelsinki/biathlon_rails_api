@@ -54,6 +54,11 @@ Rails.application.routes.draw do
       end
     end
   end
+  resource :hardwares do
+    collection do
+      get :i_am_alive
+    end
+  end
   
       
   resources :authentications do

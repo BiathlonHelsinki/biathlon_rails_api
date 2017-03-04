@@ -6,4 +6,9 @@ class Hardware < ApplicationRecord
   friendly_id :name, use: [:slugged, :finders ]
   validates_presence_of :name
   validates_uniqueness_of :name
+  
+  def checkable?
+    checkable
+  end
+  
 end
