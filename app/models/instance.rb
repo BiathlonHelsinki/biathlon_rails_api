@@ -15,6 +15,7 @@ class Instance < ApplicationRecord
   has_many :users, through: :instances_users
   has_many :onetimers, dependent: :destroy
   before_save :spend_from_blockchain
+  has_many :registrations, dependent: :destroy
   
   #validate :name_present_in_at_least_one_locale
   scope :between, -> (start_time, end_time) { 

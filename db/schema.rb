@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170304122233) do
+ActiveRecord::Schema.define(version: 20170308152815) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -267,7 +267,7 @@ ActiveRecord::Schema.define(version: 20170304122233) do
   end
 
   create_table "instances", force: :cascade do |t|
-    t.integer  "event_id",                             null: false
+    t.integer  "event_id",                               null: false
     t.integer  "cost_bb"
     t.float    "cost_euros"
     t.datetime "start_at"
@@ -280,16 +280,28 @@ ActiveRecord::Schema.define(version: 20170304122233) do
     t.integer  "image_width"
     t.integer  "image_size"
     t.string   "slug"
-    t.datetime "created_at",                           null: false
-    t.datetime "updated_at",                           null: false
+    t.datetime "created_at",                             null: false
+    t.datetime "updated_at",                             null: false
     t.string   "sequence"
     t.boolean  "is_meeting"
     t.integer  "proposal_id"
     t.boolean  "allow_multiple_entry"
-    t.boolean  "spent_biathlon",       default: false, null: false
+    t.boolean  "spent_biathlon",         default: false, null: false
     t.boolean  "request_rsvp"
     t.boolean  "request_registration"
     t.float    "custom_bb_fee"
+    t.string   "email_registrations_to"
+    t.string   "question1_text"
+    t.string   "question2_text"
+    t.string   "question3_text"
+    t.string   "question4_text"
+    t.string   "boolean1_text"
+    t.string   "boolean2_text"
+    t.boolean  "require_approval"
+    t.boolean  "hide_registrants"
+    t.boolean  "show_guests_to_public"
+    t.integer  "max_attendees"
+    t.boolean  "registration_open",      default: true,  null: false
     t.index ["event_id"], name: "index_instances_on_event_id", using: :btree
     t.index ["place_id"], name: "index_instances_on_place_id", using: :btree
     t.index ["proposal_id"], name: "index_instances_on_proposal_id", using: :btree
@@ -485,6 +497,24 @@ ActiveRecord::Schema.define(version: 20170304122233) do
     t.index ["instance_id"], name: "index_rates_on_instance_id", using: :btree
   end
 
+  create_table "registrations", force: :cascade do |t|
+    t.integer  "user_id"
+    t.integer  "instance_id"
+    t.string   "phone"
+    t.text     "question1"
+    t.text     "question2"
+    t.boolean  "boolean1"
+    t.boolean  "boolean2"
+    t.text     "question3"
+    t.text     "question4"
+    t.boolean  "approved"
+    t.boolean  "waiting_list", default: false, null: false
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
+    t.index ["instance_id"], name: "index_registrations_on_instance_id", using: :btree
+    t.index ["user_id"], name: "index_registrations_on_user_id", using: :btree
+  end
+
   create_table "roles", force: :cascade do |t|
     t.string   "name"
     t.string   "resource_type"
@@ -604,6 +634,8 @@ ActiveRecord::Schema.define(version: 20170304122233) do
   add_foreign_key "posts", "users"
   add_foreign_key "proposals", "users"
   add_foreign_key "rates", "instances"
+  add_foreign_key "registrations", "instances"
+  add_foreign_key "registrations", "users"
   add_foreign_key "roombookings", "ethtransactions"
   add_foreign_key "roombookings", "rates"
   add_foreign_key "roombookings", "users"
