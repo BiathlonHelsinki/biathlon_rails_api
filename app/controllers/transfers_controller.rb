@@ -21,7 +21,7 @@ class TransfersController < ApplicationController
       if sender.accounts.primary.first.external == true
         transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points])
       else
-        transaction = api.transfer_user(sender.accounts.first.address, recipient.accounts.first.address, params[:points], sender.geth_pwd)
+        transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points]) #, sender.geth_pwd)
       end
       if JSON.parse(transaction)['error']
         render json: {error: JSON.parse(transaction)['error']}, status: 400
