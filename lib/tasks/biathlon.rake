@@ -9,6 +9,34 @@ def account_balance(url = '/account_balance', account)
   return response.parsed_response
 end
 
+namespace :temporary do
+  desc 'check door controller'
+  task check_door_controller: :environment do
+    require 'net/http'
+    require 'uri'
+    Hardware.monitored.each do |hardware|
+      if hardware.last_checked_at.utc <= 90.minutes.ago
+        next if hardware.notified_of_error == true
+        uri = URI.parse("https://textbelt.com/text")
+        numbers = Figaro.env.emergency_contact.split(',')
+        numbers.each do |number|
+          Net::HTTP.post_form(uri, {
+            :phone => number,
+            :message => "Temporary's #{hardware.name} has not been online since #{hardware.last_checked_at.localtime.to_s}, please check!",
+            :key => Figaro.env.textbelt_key
+          })
+
+          hardware.update_attribute(:notified_of_error, true)
+          
+
+        end
+      end
+        
+    end
+  end
+end
+
+
 namespace :bidapp do
   
   desc 'Confirm all unconfirmed Ethereum transactions'
