@@ -81,7 +81,7 @@ class Instance < ApplicationRecord
             transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
             if transaction['data']
               pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
-              pledge.user.update_balance_from_blockchain
+              #pledge.user.update_balance_from_blockchain
               pledge.user.save(validate: false)
           
               et = nil

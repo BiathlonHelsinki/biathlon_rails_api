@@ -76,6 +76,7 @@ Rails.application.routes.draw do
       get :user_from_tag
       get :erase_tag
       get :auth_door
+      get :auth_closet
     end
   end
   match '/users/:user_id/instances/:instance_id/user_attend/:visit_date' => 'instances#user_attend', via: :get

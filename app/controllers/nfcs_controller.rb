@@ -2,7 +2,34 @@ class NfcsController < ApplicationController
 
   skip_before_action :authenticate_user!, raise: false
   before_action :authenticate_hardware!, only: [:unattached_users, :auth_door, :erase_tag]
+
+
+  def auth_closet
+    if params[:securekey] == '00000000'
+      render json: {error: 'No security key on card'}, status: 401
+    else
+      @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
+      
+    end
+    if @nfc.nil?
+      render json: {error: 'no card found in db!'}, status: 401
+    else
+      if @nfc.keyholder == true
+        render json: {data: {access: 'BOTH', user: @nfc.user}}, status: 200
+      elsif !Roombooking.find_by(day: Time.current.localtime.to_date).nil?
+        if @nfc.user == Roombooking.find_by(day: Time.current.localtime.to_date).user
+          render json: {data: {access: 'RENTAL', user: @nfc.user}}, status: 200
+        else
+          render json: {error: {message: 'This user has not rented this fucking room', user: @nfc.user}}, status: 401
+        end
+      else
+        render json: {error: {message: 'No user found with this tag!'}}, status: 401
+      end
+    end
+  end
   
+  
+    
   def auth_door
     if params[:securekey] == '00000000'
       render json: {error: 'No security key on card'}, status: 401
