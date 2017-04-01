@@ -31,11 +31,12 @@ class NfcsController < ApplicationController
   
     
   def auth_door
-    if params[:securekey] == '00000000'
+    if params[:id].length == 8
+      @nfc = Nfc.find_by(tag_address: params[:id])
+    elsif params[:securekey] == '00000000'
       render json: {error: 'No security key on card'}, status: 401
     else
-      @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
-      
+      @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])      
     end
     if @nfc.nil?
       render json: {error: 'no card found in db!'}, status: 401
