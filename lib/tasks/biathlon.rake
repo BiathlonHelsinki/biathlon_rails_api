@@ -144,7 +144,7 @@ namespace :bidapp do
               end
             rescue Exception => e
               # don't write anything unless it goes to blockchain
-              logger.warn('spending error' + e.inspect)  
+              P 'spending error' + e.inspect
               return transaction
             end  
           end
