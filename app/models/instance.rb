@@ -85,6 +85,7 @@ class Instance < ApplicationRecord
               pledge.user.save(validate: false)
           
               et = nil
+              sleep 4
               while et.nil? do
                 et = Ethtransaction.find_by(txaddress: transaction['data'])
               end
