@@ -14,6 +14,7 @@ class NfcsController < ApplicationController
     if @nfc.nil?
       render json: {error: 'no card found in db!'}, status: 401
     else
+      @nfc.update_attribute(:last_used, Time.current.utc)      
       if @nfc.keyholder == true
         render json: {data: {access: 'BOTH', user: @nfc.user}}, status: 200
       elsif !Roombooking.find_by(day: Time.current.localtime.to_date).nil?
@@ -36,13 +37,20 @@ class NfcsController < ApplicationController
     elsif params[:securekey] == '00000000'
       render json: {error: 'No security key on card'}, status: 401
     else
-      @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])      
+      @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
     end
     if @nfc.nil?
       render json: {error: 'no card found in db!'}, status: 401
     else
+      @nfc.update_attribute(:last_used, Time.current.utc)      
       if @nfc.keyholder == true
         render json: {data: @nfc.user}, status: 200
+      elsif !Roombooking.find_by(day: Time.current.localtime.to_date).nil?
+        if @nfc.user == Roombooking.find_by(day: Time.current.localtime.to_date).user
+          render json: {data:@nfc.user}, status: 200
+        else
+          render json: {error: {message: 'This user has not rented this fucking room', user: @nfc.user}}, status: 401
+        end
       else
         render json: {error: 'No user found with this tag!'}, status: 401
       end
@@ -82,6 +90,7 @@ class NfcsController < ApplicationController
     if @nfc.nil?
       render json: {error: 'no security code on tag!'}, status: 401
     else
+      @nfc.update_attribute(:last_used, Time.current.utc)
       if @nfc.user
         render json: @nfc.user, status: 200
       else
