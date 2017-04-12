@@ -16,6 +16,14 @@ class Instance < ApplicationRecord
   has_many :onetimers, dependent: :destroy
   before_save :spend_from_blockchain
   has_many :registrations, dependent: :destroy
+  after_save -> {
+    unless proposal.blank?
+      proposal.update_column_caches
+      
+      proposal.save! 
+    end
+    
+  } 
   
   #validate :name_present_in_at_least_one_locale
   scope :between, -> (start_time, end_time) { 

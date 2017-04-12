@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170309125205) do
+ActiveRecord::Schema.define(version: 20170410132240) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -384,6 +384,15 @@ ActiveRecord::Schema.define(version: 20170309125205) do
     t.datetime "updated_at",         null: false
   end
 
+  create_table "pg_search_documents", force: :cascade do |t|
+    t.text     "content"
+    t.string   "searchable_type"
+    t.integer  "searchable_id"
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.index ["searchable_type", "searchable_id"], name: "index_pg_search_documents_on_searchable_type_and_searchable_id", using: :btree
+  end
+
   create_table "place_translations", force: :cascade do |t|
     t.integer  "place_id",   null: false
     t.string   "locale",     null: false
@@ -458,16 +467,25 @@ ActiveRecord::Schema.define(version: 20170309125205) do
     t.string   "timeframe"
     t.text     "goals"
     t.string   "intended_participants"
-    t.datetime "created_at",                            null: false
-    t.datetime "updated_at",                            null: false
-    t.integer  "comment_count",         default: 0
+    t.datetime "created_at",                                          null: false
+    t.datetime "updated_at",                                          null: false
+    t.integer  "comment_count",                       default: 0
     t.boolean  "notified"
     t.boolean  "scheduled"
     t.boolean  "allow_rescheduling"
     t.integer  "recurrence"
     t.integer  "intended_sessions"
-    t.boolean  "stopped",               default: false, null: false
+    t.boolean  "stopped",                             default: false, null: false
     t.integer  "proposalstatus_id"
+    t.integer  "total_needed_with_recurrence_cached"
+    t.string   "needed_array_cached"
+    t.boolean  "has_enough_cached"
+    t.integer  "number_that_can_be_scheduled_cached"
+    t.boolean  "pledgeable_cached"
+    t.integer  "pledged_cached"
+    t.integer  "remaining_pledges_cached"
+    t.integer  "spent_cached"
+    t.integer  "published_instances",                 default: 0,     null: false
     t.index ["user_id"], name: "index_proposals_on_user_id", using: :btree
   end
 
