@@ -84,8 +84,9 @@ class Proposal < ApplicationRecord
       end
       return array
     else
-      out = instances.published.order(:start_at).map(&:cost_in_temps)
-      if intended_sessions.blank? || intended_sessions =~ /\D/
+      out = instances.published.order(:start_at).map(&:cost_in_temps).map(&:to_i)
+
+      if intended_sessions.blank? || intended_sessions =~ /\D/ || intended_sessions == 0
         sesh = 35
       else
         sesh = intended_sessions - 1
@@ -217,7 +218,7 @@ class Proposal < ApplicationRecord
     if recurs?
       if published_instances > YAML.load(needed_array_cached).size
         return (remaining_pledges / YAML.load(needed_array_cached).last).to_i
-      elsif remaining_pledges > YAML.load(needed_array_cached)[(published_instances)..-1].sum
+      elsif remaining_pledges >   YAML.load(needed_array_cached)[(published_instances)..-1].sum
         return YAML.load(needed_array_cached)[(published_instances)..-1].size
       else
         YAML.load(needed_array_cached)[(published_instances)..-1].each_with_index do |val, index|
