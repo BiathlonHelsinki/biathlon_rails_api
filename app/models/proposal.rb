@@ -218,7 +218,7 @@ class Proposal < ApplicationRecord
       if published_instances > YAML.load(needed_array_cached).size
         return (remaining_pledges / YAML.load(needed_array_cached).last).to_i
       elsif remaining_pledges > YAML.load(needed_array_cached)[(published_instances)..-1].sum
-        return YAML.load(needed_array_cached)[(published_instances).-1].size
+        return YAML.load(needed_array_cached)[(published_instances)..-1].size
       else
         YAML.load(needed_array_cached)[(published_instances)..-1].each_with_index do |val, index|
           tally += val
