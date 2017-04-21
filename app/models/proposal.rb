@@ -63,7 +63,7 @@ class Proposal < ApplicationRecord
     rate = Rate.get_current.experiment_cost
     if published_instances == 0
       array = [rate]
-      if intended_sessions.blank? || intended_sessions =~ /\D/
+      if intended_sessions.blank? || intended_sessions =~ /\D/ || intended_sessions == 0
         sesh = 35
       else
         sesh = intended_sessions - 1
@@ -216,12 +216,12 @@ class Proposal < ApplicationRecord
     rate = Rate.get_current.experiment_cost
     tally = 0
     if recurs?
-      if published_instances > YAML.load(needed_array_cached).size
-        return (remaining_pledges / YAML.load(needed_array_cached).last).to_i
-      elsif remaining_pledges >   YAML.load(needed_array_cached)[(published_instances)..-1].sum
-        return YAML.load(needed_array_cached)[(published_instances)..-1].size
+      if published_instances > needed_array.size
+        return (remaining_pledges / needed_array.last).to_i
+      elsif remaining_pledges >=   needed_array[(published_instances)..-1].sum
+        needed_array[(published_instances)..-1].size
       else
-        YAML.load(needed_array_cached)[(published_instances)..-1].each_with_index do |val, index|
+        needed_array[(published_instances)..-1].each_with_index do |val, index|
           tally += val
           if remaining_pledges >= tally
             next
@@ -229,6 +229,7 @@ class Proposal < ApplicationRecord
             return index # - published_instances
           end
         end
+        return tally
       end
     else
       return (remaining_pledges >= rate) ? 1 : 0

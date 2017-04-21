@@ -2,7 +2,7 @@ class EventSerializer < ActiveModel::Serializer
   attributes :id,  :start_at, :end_at, :cost_bb, :description, :image
 
   def name
-    name[0..20].gsub(/\s\w+\s*$/, '...')
+    name[0..40].gsub(/\s\w+\s*$/, '...')
   end
   
   def created_at

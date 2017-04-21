@@ -1,8 +1,13 @@
 class InstanceSerializer < ActiveModel::Serializer
-  attributes :id, :name, :start_at, :end_at, :description, :cost_bb, :image
+  attributes :id, :name, :start_at, :end_at, :description, :cost_bb, :image, :slug, :checked_in_so_far
 
+
+  def checked_in_so_far
+    object.instances_users.where(visit_date: Time.current.to_date).size + object.onetimers.today(Time.current.to_date).size
+  end
+  
   def name
-    object.name[0..20].gsub(/\s\w+\s*$/, '...')
+    object.name[0..40].gsub(/\s\w+\s*$/, '...')
   end
   
   def image

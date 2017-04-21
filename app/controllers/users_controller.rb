@@ -74,10 +74,12 @@ class UsersController < ApplicationController
         render json: {data: @user}, status: 200
       rescue
         # logger.warn("error")
-        render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
+        render json: {error: {user: @user, all: @user.errors.as_json(full_messages: true) }}, status: :unprocessable_entity
       end
     else
-      render json: {error: 'Card already belongs to user ' + existing.user.username + " (#{existing.user.name})"}, status: :unprocessable_entity
+      # logger.warn('hash is ' + {errors: {message: 'Card already belongs to user ' + existing.user.username + " (#{existing.user.name})", user: existing.user}}.as_json.to_s)
+      # {errors: [{message: 'Card already belongs to user ' + existing.user.username + " (#{existing.user.name})", user: existing.user}]}.as_json
+      render json: {error: {message: 'That card already belongs to ' + existing.user.display_name, user: existing.user}} , status: :unprocessable_entity
     end
   end
   
