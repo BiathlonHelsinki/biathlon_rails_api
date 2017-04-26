@@ -1,8 +1,10 @@
 require 'httparty'
 
+
 class BidappApi
   API_URL = Figaro.env.dapp_address
 
+  
   def api_call(url = '/')
     response = HTTParty.get(API_URL + url, timeout: 12)
     # TODO more error checking (500 error, etc)
@@ -33,10 +35,18 @@ class BidappApi
     return response.body
   end
   
-  def mint(recipient, tokens) 
+  def mint(recipient, tokens)
+    # logger = ActiveSupport::Logger.new(STDOUT)
+    # logger.level = :info
     response = HTTParty.post(API_URL + '/mint', body: {recipient: recipient, tokens: tokens}, timeout: 6 )
+    # logger.info('mint output is ' + response.body.inspect)
+    json = JSON.parse(response.body)
     begin
-      JSON.parse(response.body)
+      if json['status'] == 'success'
+        return json
+      else
+        return {status: 'error', message: json['message']}.as_json
+      end
     rescue e
       return e
     end

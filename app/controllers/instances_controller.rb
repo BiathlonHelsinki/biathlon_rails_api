@@ -47,21 +47,36 @@ class InstancesController < ApplicationController
   end
   
   def user_attend
-
-    @user = User.friendly.find(params[:user_id])
-    event = Instance.friendly.find(params[:id])
-    if params[:visit_date]
-      visit_date = params[:visit_date]
-    else   
-      visit_date = Time.now.to_date
-    end
-
-    transaction = @user.award_points(event, event.cost_bb, visit_date.to_s)
-    if transaction        
-      render json: @user, status: 200, location: @user
+    @geth_status = Net::Ping::TCP.new(ENV['geth_server'],  ENV['geth_port'], 1).ping?
+    @dapp_status = Net::Ping::TCP.new(ENV['dapp_server'],  ENV['dapp_port'], 1).ping?
+    if !@dapp_status
+      render json: {error: {message: 'The Biathlon Dapp is not running.'}}, status: 422
+    elsif !@geth_status
+      render json: {error: {message: 'The Ethereum client is not running.'}}, status: 422
     else
-      logger.warn(@user.errors.as_json(full_messages: true))
-      render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
+      @user = User.friendly.find(params[:user_id])
+      event = Instance.friendly.find(params[:id])
+      if params[:visit_date]
+        visit_date = params[:visit_date]
+      else   
+        visit_date = Time.now.to_date
+      end
+
+      transaction = @user.award_points(event, event.cost_bb, visit_date.to_s)
+
+      if transaction
+        if transaction["status"] == 'error'
+          render json: {error: {message: transaction["message"]}}, status: :unprocessable_entity
+        elsif transaction["error"]
+          render json: {error: {message: transaction["error"].inspect}}, status: :unprocessable_entity
+        else
+
+          render json: @user, status: 200, location: @user
+        end
+      else
+        # logger.warn(@user.errors.as_json(full_messages: true))
+        render json: {error: {message: @user.errors.full_messages.join(', ') }}, status: :unprocessable_entity
+      end
     end
   end
   

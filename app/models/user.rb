@@ -119,6 +119,7 @@ class User < ActiveRecord::Base
 
         begin
           # 1. make activity first with blank transaction
+
           a = Activity.create(user: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended')
           
           # 2. make instance_user
@@ -138,14 +139,25 @@ class User < ActiveRecord::Base
             a.txaddress = transaction['data']
             if a.save
               save
-              return true
+              return transaction
             else
-              logger.warn('errors are ' + a.errors.inspect)
+              # logger.warn('errors are ' + a.errors.inspect)
               return false
             end
+            # logger.warn('hmmmm ..... ' + transaction)
           elsif transaction['error']
-            return transaction['error']
+
+            logger.warn('message is ' + transaction[:message].to_s)
+            return transaction[:message]
+          elsif transaction['status'] == 'error'
+
+            return transaction
+          else
+            logger.warn('none of the above: ' + transaction.inspect)
           end
+          
+        rescue Net::ReadTimeout
+          return {error: {message: 'There was a problem communicating with the Ethereum blockchain. Your check-in has been logged and will be resubmitted later. Enjoy the experiment!'}}
         rescue Exception => e
           # don't write anything unless it goes to blockchain
           logger.warn('minting error: ' + e.inspect)  
