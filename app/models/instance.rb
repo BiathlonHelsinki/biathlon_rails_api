@@ -86,6 +86,11 @@ class Instance < ApplicationRecord
           pledge_cache.push(pledge)
           counter -= spent
           begin
+            # make the activity first
+            a = Activity.new(user: pledge.user, item: proposal, ethtransaction_id: nil, 
+            description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
+            extra_info: 'which was scheduled as ',  addition: -1, txaddress: nil)
+            
             transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
             if transaction['data']
               pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
@@ -93,14 +98,15 @@ class Instance < ApplicationRecord
               pledge.user.save(validate: false)
           
               et = nil
-              sleep 4
-              while et.nil? do
-                et = Ethtransaction.find_by(txaddress: transaction['data'])
-              end
-
-              a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: et.id, 
-              description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
-              extra_info: 'which was scheduled as ',  addition: -1, txaddress: transaction['data'])
+         
+              Timeout::timeout(3) {
+                while et.nil? do
+                  et = Ethtransaction.find_by(txaddress: transaction['data'])
+                end
+              }
+              a.ethtransaction = et
+              a.txaddress = transaction['data']
+              a.save
               activity_cache.push(a)
             elsif transaction['error']
               return transaction['error']
