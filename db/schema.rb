@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170501093244) do
+ActiveRecord::Schema.define(version: 20170511135616) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -443,6 +443,22 @@ ActiveRecord::Schema.define(version: 20170501093244) do
     t.index ["post_id"], name: "index_post_translations_on_post_id", using: :btree
   end
 
+  create_table "postcategories", force: :cascade do |t|
+    t.string   "slug"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "postcategory_translations", force: :cascade do |t|
+    t.integer  "postcategory_id", null: false
+    t.string   "locale",          null: false
+    t.datetime "created_at",      null: false
+    t.datetime "updated_at",      null: false
+    t.string   "name"
+    t.index ["locale"], name: "index_postcategory_translations_on_locale", using: :btree
+    t.index ["postcategory_id"], name: "index_postcategory_translations_on_postcategory_id", using: :btree
+  end
+
   create_table "posts", force: :cascade do |t|
     t.string   "slug"
     t.boolean  "published"
@@ -457,6 +473,7 @@ ActiveRecord::Schema.define(version: 20170501093244) do
     t.datetime "updated_at",         null: false
     t.boolean  "sticky"
     t.integer  "instance_id"
+    t.integer  "postcategory_id"
     t.index ["user_id"], name: "index_posts_on_user_id", using: :btree
   end
 

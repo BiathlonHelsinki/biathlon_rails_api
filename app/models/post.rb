@@ -10,6 +10,7 @@ class Post < ApplicationRecord
   mount_uploader :image, ImageUploader
   has_many :activities, as: :item, dependent: :destroy
   scope :published, -> () { where(published: true) }
+  belongs_to :postcategory
   def title_en
     self.title(:en)
   end
