@@ -66,11 +66,12 @@ class InstancesController < ApplicationController
 
       if transaction
         if transaction["status"] == 'error'
-          render json: {error: {message: transaction["message"]}}, status: :unprocessable_entity
+          render json: {error: {message: 'The blockchain client is offline but your check-in has been recorded and will be processed later. You are done here!'}}, status: :unprocessable_entity
         elsif transaction["error"]
+  
           render json: {error: {message: transaction["error"].inspect}}, status: :unprocessable_entity
         else
-
+          logger.warn('transacxton output is ' + transaction.inspect)
           render json: @user, status: 200, location: @user
         end
       else

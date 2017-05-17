@@ -130,6 +130,7 @@ class User < ActiveRecord::Base
           transaction = api.mint(self.accounts.first.address, points)
 
           if transaction['data']
+            logger.warn('address is ' + transaction['data'])
             accounts.first.balance = accounts.first.balance.to_i + points
             sleep 1
             e = Ethtransaction.find_by(txaddress: transaction['data'])
@@ -148,10 +149,11 @@ class User < ActiveRecord::Base
           elsif transaction['error']
 
             logger.warn('message is ' + transaction[:message].to_s)
-            return transaction[:message]
-          elsif transaction['status'] == 'error'
-
             return transaction
+          elsif transaction['status'] == 'error'
+            logger.warn('third error:' + transaction.inspect)
+            return transaction
+
           else
             logger.warn('none of the above: ' + transaction.inspect)
           end
@@ -163,7 +165,8 @@ class User < ActiveRecord::Base
           logger.warn('minting error: ' + e.inspect)  
           return transaction
         end
-      else
+      else 
+        logger.warn('wtf')
 
         self.errors.add(:base, error.inspect)
         return false
