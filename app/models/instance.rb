@@ -113,7 +113,9 @@ class Instance < ApplicationRecord
             end
           rescue Exception => e
             # don't write anything unless it goes to blockchain
-            logger.warn('spending error' + e.inspect)  
+            logger.warn('spending error: ' + e.inspect)  
+            pledge.update_attribute(:converted, false)
+            pledge.update_attribute(:extra_info, nil)
             return transaction
           end
         end
