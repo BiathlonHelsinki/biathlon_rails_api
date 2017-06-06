@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170522085225) do
+ActiveRecord::Schema.define(version: 20170606111631) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -79,6 +79,22 @@ ActiveRecord::Schema.define(version: 20170522085225) do
     t.datetime "updated_at", null: false
     t.index ["user_id", "provider", "uid"], name: "index_authentications_on_user_id_and_provider_and_uid", unique: true, using: :btree
     t.index ["user_id"], name: "index_authentications_on_user_id", using: :btree
+  end
+
+  create_table "blockchain_transactions", force: :cascade do |t|
+    t.integer  "transaction_type_id"
+    t.integer  "account_id"
+    t.integer  "ethtransaction_id"
+    t.integer  "activity_id"
+    t.integer  "value"
+    t.datetime "submitted_at"
+    t.datetime "confirmed_at"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+    t.index ["account_id"], name: "index_blockchain_transactions_on_account_id", using: :btree
+    t.index ["activity_id"], name: "index_blockchain_transactions_on_activity_id", using: :btree
+    t.index ["ethtransaction_id"], name: "index_blockchain_transactions_on_ethtransaction_id", using: :btree
+    t.index ["transaction_type_id"], name: "index_blockchain_transactions_on_transaction_type_id", using: :btree
   end
 
   create_table "ckeditor_assets", force: :cascade do |t|
@@ -599,8 +615,9 @@ ActiveRecord::Schema.define(version: 20170522085225) do
   create_table "transaction_types", force: :cascade do |t|
     t.string   "name"
     t.string   "slug"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.integer  "factorial",  default: 0
   end
 
   create_table "users", force: :cascade do |t|
@@ -658,6 +675,10 @@ ActiveRecord::Schema.define(version: 20170522085225) do
   add_foreign_key "accounts", "users"
   add_foreign_key "activities", "ethtransactions"
   add_foreign_key "authentications", "users"
+  add_foreign_key "blockchain_transactions", "accounts"
+  add_foreign_key "blockchain_transactions", "activities"
+  add_foreign_key "blockchain_transactions", "ethtransactions"
+  add_foreign_key "blockchain_transactions", "transaction_types"
   add_foreign_key "comments", "users"
   add_foreign_key "credits", "ethtransactions"
   add_foreign_key "credits", "rates"
