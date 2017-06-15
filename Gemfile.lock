@@ -345,6 +345,7 @@ DEPENDENCIES
   capistrano3-puma
   carrierwave
   carrierwave-aws
+  daemons
   delayed_job_active_record
   devise
   factory_girl_rails
