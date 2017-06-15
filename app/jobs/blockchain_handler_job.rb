@@ -13,7 +13,7 @@ class BlockchainHandlerJob < ApplicationJob
       elsif blockchaintransaction.transaction_type_id == 3
         transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value)
       end
-      
+      sleep 4
       if transaction['data']
         et = Ethtransaction.find_by(txaddress: transaction['data'])
         blockchaintransaction.ethtransaction = et
