@@ -14,6 +14,7 @@ class BlockchainHandlerJob < ApplicationJob
         transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value)
       end
       sleep 4
+      logger.warn('transaction hash is ' + transaction.inspect)
       if transaction['data']
         et = Ethtransaction.find_by(txaddress: transaction['data'])
         blockchaintransaction.ethtransaction = et
