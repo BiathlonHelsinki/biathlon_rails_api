@@ -9,14 +9,16 @@ class CreditsController < ApplicationController
     if @credit.save
       render json: {data: @credit.ethtransaction}, status: 200
     else
+      logger.warn('errors are: ' + @credit.errors.inspect)
       render json: @credit.errors, status: :unprocessable_entity
     end
   end
   
   def destroy
     credit = Credit.find(params[:id])
+    user = credit.user
     credit.destroy!
-    render json: @credit, status: :deleted
+    render json: user, status: :deleted
   end
   
 

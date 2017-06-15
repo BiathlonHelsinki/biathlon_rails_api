@@ -68,7 +68,7 @@ class Instance < ApplicationRecord
       activity_cache = Array.new
       pledge_cache = Array.new
       if proposal
-        api = BidappApi.new
+        # api = BidappApi.new
         proposal.pledges.unconverted.order(:created_at).each do |pledge| 
           next if counter < 1
           if pledge.pledge <= counter
@@ -87,29 +87,32 @@ class Instance < ApplicationRecord
           counter -= spent
           begin
             # make the activity first
-            a = Activity.new(user: pledge.user, item: proposal, ethtransaction_id: nil, 
+            b = BlockchainTransaction.new(value: spent, account: pledge.user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
+            a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: nil, 
             description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
-            extra_info: 'which was scheduled as ',  addition: -1, txaddress: nil)
+            extra_info: 'which was scheduled as ',  addition: -1, txaddress: nil, blockchain_transaction: b)
             
-            transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
-            if transaction['data']
-              pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
-              #pledge.user.update_balance_from_blockchain
-              pledge.user.save(validate: false)
-          
-              et = nil
-         
-              Timeout::timeout(3) {
-                while et.nil? do
-                  et = Ethtransaction.find_by(txaddress: transaction['data'])
-                end
-              }
-              a.ethtransaction = et
-              a.txaddress = transaction['data']
-              a.save
+            # transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
+            # if transaction['data']
+            #   pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
+            #   #pledge.user.update_balance_from_blockchain
+            #   pledge.user.save(validate: false)
+            #
+            #   et = nil
+            #
+            #   Timeout::timeout(3) {
+            #     while et.nil? do
+            #       et = Ethtransaction.find_by(txaddress: transaction['data'])
+            #     end
+            #   }
+            #   a.ethtransaction = et
+            #   a.txaddress = transaction['data']
+            if b.save
+              BlockchainHandlerJob.perform_later b
+              # a.save
               activity_cache.push(a)
-            elsif transaction['error']
-              return transaction['error']
+            # elsif transaction['error']
+            #   return transaction['error']
             end
           rescue Exception => e
             # don't write anything unless it goes to blockchain

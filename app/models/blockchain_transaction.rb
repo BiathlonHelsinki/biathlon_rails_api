@@ -1,6 +1,7 @@
 class BlockchainTransaction < ApplicationRecord
-  belongs_to :transactiontype
+  belongs_to :transaction_type
   belongs_to :account
+  belongs_to :recipient, class_name: 'Account', foreign_key: 'recipient_id'
   belongs_to :ethtransaction
-  belongs_to :activity
+  has_one :activity
 end

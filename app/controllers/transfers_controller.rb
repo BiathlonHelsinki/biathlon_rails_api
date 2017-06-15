@@ -16,32 +16,39 @@ class TransfersController < ApplicationController
     end
     
     # account is created in theory, so now let's do the transaction
-    api = BidappApi.new
+    # api = BidappApi.new
     begin
-      if sender.accounts.primary.first.external == true
-        transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points])
-      else
-        transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points]) 
+      # if sender.accounts.primary.first.external == true
+
+       b = BlockchainTransaction.new(value: params[:points], account: sender.accounts.first, recipient: recipient.accounts.first,  transaction_type: TransactionType.find_by(name: 'Transfer'))
+        # transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points])
+      # else
+        # transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points])
          #, sender.geth_pwd)
-      end
-      if JSON.parse(transaction)['error']
-        render json: {error: JSON.parse(transaction)['error']}, status: 400
-      else
-        sleep 2
+      # end
+      # if JSON.parse(transaction)['error']
+ #        render json: {error: JSON.parse(transaction)['error']}, status: 400
+ #      else
+ #        sleep 2
         # et = nil
         # loop do
-          et = Ethtransaction.find_by(txaddress: JSON.parse(transaction)['data'])
+          # et = Ethtransaction.find_by(txaddress: JSON.parse(transaction)['data'])
         #   sleep 1
         #   break if !et.nil?
         # end
+
         a = Activity.create(user: recipient, item: current_user,
-          ethtransaction: et, addition: 0, txaddress: JSON.parse(transaction)['data'],
-          description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})"
+          ethtransaction: nil, addition: 0, txaddress: nil,
+          description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})", blockchain_transaction: b
           )
-        sender.update_balance_from_blockchain
-        recipient.update_balance_from_blockchain
-        render json: {data: JSON.parse(transaction)['data']}, status: 200
-      end
+        if b.save
+          BlockchainHandlerJob.perform_later b
+        end  
+        sender.latest_balance = sender.latest_balance - params[:points].to_i
+        recipient.latest_balance = recipient.latest_balance + params[:points].to_i
+        sender.save
+        recipient.save
+        render json: {data: current_user}, status: 200
     rescue => e
       logger.warn('errs are ' + e.inspect)
       render json: {error: e.inspect }, status: :unprocessable_entity

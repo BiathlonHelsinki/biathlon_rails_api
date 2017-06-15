@@ -6,6 +6,7 @@ class Activity < ApplicationRecord
   belongs_to :extra, polymorphic: true
   belongs_to :onetimer
   has_one :instances_user
+  belongs_to :blockchain_transaction, autosave: true
   validates_presence_of :item_id, :item_type
   
   scope :by_user, ->(user_id) { where(user_id: user_id) }

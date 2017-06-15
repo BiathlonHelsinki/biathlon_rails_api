@@ -100,79 +100,93 @@ class User < ActiveRecord::Base
     # else
       # check if user has ethereum account yet
       if accounts.empty?
-        begin
-          create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
-          if JSON.parse(create_call.body)['data'].blank?
-            logger.warn('error is ' + JSON.parse(create_call.body)['error'].inspect)
-            exit
-          else
-            accounts << Account.create(address: JSON.parse(create_call.body)['data'])
-          end
-        rescue Exception => e
+        @dapp_status = Net::Ping::TCP.new(ENV['dapp_server'],  ENV['dapp_port'], 1).ping?
+        if !@dapp_status
+          return {"status" => "error", "message" => 'The Biathlon Dapp is not running!'}
+        else
+          begin
+            create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
+            if JSON.parse(create_call.body)['data'].blank?
+              logger.warn('error is ' + JSON.parse(create_call.body)['error'].inspect)
+              exit
+            else
+              accounts << Account.create(address: JSON.parse(create_call.body)['data'])
+            end
+          rescue Exception => e
           
-          error = e
+            error = e
+          end
         end
       end
       if error.nil?
         # account is created in theory, so now let's do the transaction
-        api = BidappApi.new
+        # no longer logging blockchain on the fly, but queing to process later
+        # api = BidappApi.new
 
         begin
           # 1. make activity first with blank transaction
-
-          a = Activity.create(user: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended')
+           b = BlockchainTransaction.new( value: points, account: self.accounts.first, transaction_type: TransactionType.find_by(name: 'Create'))
+          a = Activity.create(user: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
           
           # 2. make instance_user
           instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
           
           # 3. submit transaction, get hash
 
-          transaction = api.mint(self.accounts.first.address, points)
-
-          if transaction['data']
-            logger.warn('address is ' + transaction['data'])
-            accounts.first.balance = accounts.first.balance.to_i + points
-            sleep 1
-            e = Ethtransaction.find_by(txaddress: transaction['data'])
-
-            # 4. add hash to activity
-            a.ethtransaction = e
-            a.txaddress = transaction['data']
-            if a.save
-              save
-              return transaction
-            else
-              # logger.warn('errors are ' + a.errors.inspect)
-              return false
-            end
-            # logger.warn('hmmmm ..... ' + transaction)
-          elsif transaction['error']
-
-            logger.warn('message is ' + transaction[:message].to_s)
-            return transaction
-          elsif transaction['status'] == 'error'
-            logger.warn('third error:' + transaction.inspect)
-            return transaction
-
+          # 3 NEW: submit to blockchain queue
+         
+          if b.save
+             BlockchainHandlerJob.perform_later b
+            return {"status" => "success"}
           else
-            logger.warn('none of the above: ' + transaction.inspect)
+            return {"error" => "error", "message" => b.errors.inspect}
           end
-          
-        rescue Net::ReadTimeout
-          return {error: {message: 'There was a problem communicating with the Ethereum blockchain. Your check-in has been logged and will be resubmitted later. Enjoy the experiment!'}}
-        rescue Exception => e
-          # don't write anything unless it goes to blockchain
-          logger.warn('minting error: ' + e.inspect)  
-          return transaction
-        end
-      else 
-        logger.warn('wtf')
-
-        self.errors.add(:base, error.inspect)
-        return false
+          # transaction = api.mint(self.accounts.first.address, points)
+          #
+          # if transaction['data']
+          #   logger.warn('address is ' + transaction['data'])
+          #   accounts.first.balance = accounts.first.balance.to_i + points
+          #   sleep 1
+          #   e = Ethtransaction.find_by(txaddress: transaction['data'])
+          #
+          #   # 4. add hash to activity
+          #   a.ethtransaction = e
+          #   a.txaddress = transaction['data']
+          #   if a.save
+          #     save
+          #     return transaction
+          #   else
+          #     # logger.warn('errors are ' + a.errors.inspect)
+          #     return false
+          #   end
+          #   # logger.warn('hmmmm ..... ' + transaction)
+          # elsif transaction['error']
+          #
+          #   logger.warn('message is ' + transaction[:message].to_s)
+          #   return transaction
+          # elsif transaction['status'] == 'error'
+          #   logger.warn('third error:' + transaction.inspect)
+          #   return transaction
+          #
+          # else
+          #   logger.warn('none of the above: ' + transaction.inspect)
+          # end
+      #
+      #   rescue Net::ReadTimeout
+      #     return {error: {message: 'There was a problem communicating with the Ethereum blockchain. Your check-in has been logged and will be resubmitted later. Enjoy the experiment!'}}
+      #   rescue Exception => e
+      #     # don't write anything unless it goes to blockchain
+      #     logger.warn('minting error: ' + e.inspect)
+      #     return transaction
+      #   end
+      # else
+      #   logger.warn('wtf')
+      #
+      #   self.errors.add(:base, error.inspect)
+      #   return false
       end
 
-    # end
+    end
   end
 
   def self.find_for_oauth(auth, signed_in_resource = nil)

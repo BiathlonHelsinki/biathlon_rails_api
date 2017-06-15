@@ -29,7 +29,7 @@ module Biathlon
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
     config.time_zone = 'Europe/Helsinki'
-
+    config.active_job.queue_adapter = :delayed_job
     config.active_record.time_zone_aware_types = [:datetime, :time]
   end
   ActiveModelSerializers.config.adapter = :json_api 
