@@ -65,7 +65,7 @@ class BidappApi
   def transfer_user(sender, recipient, tokens, password) 
     begin
       response = HTTParty.post(API_URL + '/transfer', body: {sender: sender, recipient: recipient, tokens: tokens, unlock: password}, timeout: 12 )
-      return response.body
+      return JSON.parse(response.body)
 
     rescue HTTParty::Error => e
       JSON.parse({error: "Error from #{API_URL + url}: #{e}"}.to_json)
@@ -76,6 +76,6 @@ class BidappApi
   
   def transfer(sender, recipient, tokens) 
     response = HTTParty.post(API_URL + '/transfer_owner', body: {sender: sender, recipient: recipient, tokens: tokens }, timeout: 12 )
-    return response.body
+    return JSON.parse(response.body)
   end  
 end

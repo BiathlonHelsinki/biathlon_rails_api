@@ -13,8 +13,7 @@ class BlockchainHandlerJob < ApplicationJob
       elsif blockchaintransaction.transaction_type_id == 3
         transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value)
       end
-      sleep 4
-      logger.warn('transaction hash is ' + transaction.inspect)
+      sleep 3
       if transaction['data']
         et = Ethtransaction.find_by(txaddress: transaction['data'])
         blockchaintransaction.ethtransaction = et
@@ -22,6 +21,7 @@ class BlockchainHandlerJob < ApplicationJob
         blockchaintransaction.submitted_at = Time.current
         blockchaintransaction.save
         blockchaintransaction.activity.save
+ 
       else
         logger.warn('errors: ' + transaction.inspect)
       end
