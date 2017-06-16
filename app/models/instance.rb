@@ -89,8 +89,8 @@ class Instance < ApplicationRecord
             # make the activity first
             b = BlockchainTransaction.new(value: spent, account: pledge.user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
             a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: nil, 
-            description: "spent a pledge of #{spent}#{ENV['currency_symbol']} on", 
-            extra_info: 'which was scheduled as ',  addition: -1, txaddress: nil, blockchain_transaction: b)
+            description: "spent_a_pledge_on",  numerical_value: spent, 
+            extra_info: 'which_was_scheduled_as',  addition: -1, txaddress: nil, blockchain_transaction: b)
             
             # transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
             # if transaction['data']

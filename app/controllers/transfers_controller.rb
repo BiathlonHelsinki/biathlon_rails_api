@@ -39,7 +39,7 @@ class TransfersController < ApplicationController
 
         a = Activity.create(user: recipient, item: current_user,
           ethtransaction: nil, addition: 0, txaddress: nil,
-          description: "received #{ENV['currency_symbol']} from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})", blockchain_transaction: b
+          description: "received_from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})", blockchain_transaction: b
           )
         if b.save
           BlockchainHandlerJob.perform_later b

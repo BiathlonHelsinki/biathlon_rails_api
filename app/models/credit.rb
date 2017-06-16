@@ -22,7 +22,7 @@ class Credit < ApplicationRecord
     # et = Ethtransaction.find_by(txaddress: transaction)
     # die if et.nil?
     # 
-    activities <<  Activity.create(user: user, item: self, ethtransaction_id: nil, description: 'was de-credited for', addition: -1, blockchain_transaction: b)
+    activities <<  Activity.create(user: user, item: self, ethtransaction_id: nil, description: 'was_decredited_for', addition: -1, blockchain_transaction: b)
     if b.save
       BlockchainHandlerJob.perform_later b
     end
@@ -40,7 +40,7 @@ class Credit < ApplicationRecord
     end
     
     b = BlockchainTransaction.new(value: value, account: user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Create'))
-    a = Activity.new(user: user, item: self, description: 'was credited for', addition: 1, blockchain_transaction: b)
+    a = Activity.new(user: user, item: self, description: 'was_credited_for', addition: 1, blockchain_transaction: b)
     if b.save
       a.save
       BlockchainHandlerJob.perform_later b

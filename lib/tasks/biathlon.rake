@@ -39,6 +39,13 @@ end
 
 namespace :bidapp do
   
+  desc 'Grab missing blockchain transactions'
+  task submit_missing: :environment do
+    BlockchainTransaction.where(ethtransaction: nil, submitted_at: nil).each do |b|
+      BlockchainHandlerJob.perform_later b
+    end
+  end
+      
   desc 'Confirm all unconfirmed Ethereum transactions'
   task confirm_all: :environment do
     api = BidappApi.new
@@ -116,7 +123,7 @@ namespace :bidapp do
                   et = Ethtransaction.find_by(txaddress: transaction['data'])
                 end
                 a = Activity.create(user: user, item_type: 'Post', item_id: 8, ethtransaction_id: et.id, 
-                description: "had their blockchain balance adjusted by -#{user.latest_balance - total}#{ENV['currency_symbol']}", 
+                description: "had_their_blockchain_balance_adjusted_by", numerical_value: "-" + user.latest_balance - total, 
                 addition: 0, txaddress: transaction['data'])
               elsif transaction['error']
                 return transaction['error']
@@ -137,7 +144,7 @@ namespace :bidapp do
                   et = Ethtransaction.find_by(txaddress: transaction['data'])
                 end
                 a = Activity.create(user: user, item_type: 'Post', item_id: 8, ethtransaction_id: et.id, 
-                description: "had their blockchain balance adjusted by +#{total - user.latest_balance}#{ENV['currency_symbol']}", 
+                description: "had_their_blockchain_balance_adjusted_by", numerical_value: total - user.latest_balance, 
                 addition: 0, txaddress: transaction['data'])
               elsif transaction['error']
                 return transaction['error']
