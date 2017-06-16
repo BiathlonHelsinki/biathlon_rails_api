@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170615132436) do
+ActiveRecord::Schema.define(version: 20170616103439) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -337,6 +337,15 @@ ActiveRecord::Schema.define(version: 20170615132436) do
     t.index ["event_id"], name: "index_instances_on_event_id", using: :btree
     t.index ["place_id"], name: "index_instances_on_place_id", using: :btree
     t.index ["proposal_id"], name: "index_instances_on_proposal_id", using: :btree
+  end
+
+  create_table "instances_organisers", force: :cascade do |t|
+    t.integer  "instance_id"
+    t.integer  "organiser_id"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+    t.index ["instance_id", "organiser_id"], name: "instances_organisers_instance_id_organiser_id_key", unique: true, using: :btree
+    t.index ["instance_id"], name: "index_instances_organisers_on_instance_id", using: :btree
   end
 
   create_table "instances_users", force: :cascade do |t|
@@ -703,6 +712,7 @@ ActiveRecord::Schema.define(version: 20170615132436) do
   add_foreign_key "hardwares", "hardwaretypes"
   add_foreign_key "instances", "events"
   add_foreign_key "instances", "places"
+  add_foreign_key "instances_organisers", "instances"
   add_foreign_key "nfcs", "users"
   add_foreign_key "onetimers", "users"
   add_foreign_key "opensessions", "nodes"

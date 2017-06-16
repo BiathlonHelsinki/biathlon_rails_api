@@ -12,7 +12,9 @@ class Instance < ApplicationRecord
   belongs_to :proposal
   has_many :pledges
   has_many :instances_users
+  has_many :instances_organisers
   has_many :users, through: :instances_users
+  has_many :organisers, through: :instances_organisers
   has_many :onetimers, dependent: :destroy
   before_save :spend_from_blockchain
   has_many :registrations, dependent: :destroy
@@ -60,6 +62,10 @@ class Instance < ApplicationRecord
   
   def self.next_meeting
     self.future.meetings.first
+  end
+  
+  def responsible_people
+    [event.primary_sponsor, event.secondary_sponsor, organisers].compact.uniq
   end
   
   def spend_from_blockchain

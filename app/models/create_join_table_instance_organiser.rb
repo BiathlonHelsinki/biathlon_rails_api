@@ -1,0 +1,2 @@
+class CreateJoinTableInstanceOrganiser < ApplicationRecord
+end
