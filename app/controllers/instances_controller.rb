@@ -38,8 +38,11 @@ class InstancesController < ApplicationController
   def update
 
     @instance = Instance.friendly.find(params[:id])
-    
+    if @instance.cancelled != true && params[:instance][:cancelled] == "1"
+      Activity.create(user: current_user, item: @instance, ethtransaction_id: nil, description: 'cancelled_it', addition: 0)
+    end
     if @instance.update_attributes(instance_params)
+
       render json: {data: @instance}, status: :updated
     else
       render json: {error: @instance.errors.full_messages.join('; ')}, status: :unprocessable_entity

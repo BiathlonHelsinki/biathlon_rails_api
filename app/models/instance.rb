@@ -24,7 +24,7 @@ class Instance < ApplicationRecord
       
       proposal.save! 
     end
-    
+
   } 
   
   #validate :name_present_in_at_least_one_locale
