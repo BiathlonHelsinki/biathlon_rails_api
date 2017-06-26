@@ -25,7 +25,7 @@ class Event < ApplicationRecord
   validates_uniqueness_of :sequence
   
   scope :published, -> () { where(published: true) }
-  scope :has_events_on, -> (*args) { where(['published is true and (date(start_at) = ? OR (end_at is not null AND (date(start_at) <= ? AND date(end_at) >= ?)))', args.first, args.first, args.first] )}
+  scope :has_events_on, -> (*args) { where(['published is true and cancelled is false and (date(start_at) = ? OR (end_at is not null AND (date(start_at) <= ? AND date(end_at) >= ?)))', args.first, args.first, args.first] )}
   
   
   def at_least_one_instance
