@@ -4,6 +4,7 @@ class Instance < ApplicationRecord
   belongs_to :place
   translates :name, :description, :fallbacks_for_empty_translations => true
   accepts_nested_attributes_for :translations, :reject_if => proc {|x| x['name'].blank? && x['description'].blank? }
+  accepts_nested_attributes_for :event
   extend FriendlyId
   friendly_id :name_en , :use => [ :slugged, :finders , :history]
   mount_uploader :image, ImageUploader
@@ -18,6 +19,9 @@ class Instance < ApplicationRecord
   has_many :onetimers, dependent: :destroy
   before_save :spend_from_blockchain
   has_many :registrations, dependent: :destroy
+  
+  attr_accessor :send_to_pledgers
+    
   after_save -> {
     unless proposal.blank?
       proposal.update_column_caches

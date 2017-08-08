@@ -42,8 +42,8 @@ class InstancesController < ApplicationController
       Activity.create(user: current_user, item: @instance, ethtransaction_id: nil, description: 'cancelled_it', addition: 0)
     end
     if @instance.update_attributes(instance_params)
-
-      render json: {data: @instance}, status: :updated
+      logger.warn('here with ' + @instance.inspect)
+      render json: {data: @instance}, status: 200
     else
       render json: {error: @instance.errors.full_messages.join('; ')}, status: :unprocessable_entity
     end
@@ -88,15 +88,17 @@ class InstancesController < ApplicationController
   private
   
   def instance_params
-    
+    params[:instance][:event_attributes] = params[:instance][:experiment_attributes]
+    params[:instance].delete(:experiment_attributes)
     the_params = params.require(:instance).permit(:published, :event_id, :place_id, :primary_sponsor_id, :is_meeting, :proposal_id,
-    :secondary_sponsor_id, :cost_euros, :cost_bb, :sequence, :start_at, :end_at, :sequence, :allow_multiple_entry, :request_rsvp, 
+    :secondary_sponsor_id, :cost_euros, :cost_bb, :sequence_id, :start_at, :end_at, :sequence, :allow_multiple_entry, :request_rsvp, 
     :request_registration, :parent_id, :image, :custom_bb_fee, :request_rsvp, :request_registration, :cancelled,
-    :email_registrations_to, :question1_text, :question2_text, :question3_text, :question4_text, :boolean1_text,
+    :email_registrations_to, :question1_text, :question2_text, :question3_text, :question4_text, :boolean1_text, :send_to_pledgers,
     :boolean2_text, :require_approval, :hide_registrants, :show_guests_to_public, :max_attendees, 
-    :registration_open,
+    :registration_open, event_attributes: [:id, :secondary_sponsor_id], organiser_ids: [],
     translations_attributes: [:name, :description, :locale, :id]
     )
+
     the_params[:image] = parse_image_data(the_params[:image]) if the_params[:image]
     the_params
   end  
