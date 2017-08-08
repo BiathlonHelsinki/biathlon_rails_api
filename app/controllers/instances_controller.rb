@@ -42,7 +42,6 @@ class InstancesController < ApplicationController
       Activity.create(user: current_user, item: @instance, ethtransaction_id: nil, description: 'cancelled_it', addition: 0)
     end
     if @instance.update_attributes(instance_params)
-      logger.warn('here with ' + @instance.inspect)
       render json: {data: @instance}, status: 200
     else
       render json: {error: @instance.errors.full_messages.join('; ')}, status: :unprocessable_entity
