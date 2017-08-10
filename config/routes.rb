@@ -32,6 +32,12 @@ Rails.application.routes.draw do
       get :get_balance
       post :respend
     end
+    resources :userphotoslots do
+      collection do 
+        post :buy_slot
+      end
+    end
+    
     resources :transfers do
       collection do
         post :send_biathlon
@@ -60,7 +66,8 @@ Rails.application.routes.draw do
     end
   end
   
-      
+
+  
   resources :authentications do
     collection do
       post :add_provider

@@ -74,7 +74,7 @@ class InstancesController < ApplicationController
 
         render json: {error: {message: transaction["message"]}}, status: :unprocessable_entity
       else
-        logger.warn('transacxton output is ' + transaction.inspect)
+        # logger.warn('transaction output is ' + transaction.inspect)
         render json: @user, status: 200, location: @user
       end
     else

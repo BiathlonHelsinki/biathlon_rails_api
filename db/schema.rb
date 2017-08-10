@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170626100014) do
+ActiveRecord::Schema.define(version: 20170810212345) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -334,7 +334,7 @@ ActiveRecord::Schema.define(version: 20170626100014) do
     t.boolean  "show_guests_to_public"
     t.integer  "max_attendees"
     t.boolean  "registration_open",      default: true,  null: false
-    t.boolean  "cancelled"
+    t.boolean  "cancelled",              default: false, null: false
     t.index ["event_id"], name: "index_instances_on_event_id", using: :btree
     t.index ["place_id"], name: "index_instances_on_place_id", using: :btree
     t.index ["proposal_id"], name: "index_instances_on_proposal_id", using: :btree
@@ -646,6 +646,47 @@ ActiveRecord::Schema.define(version: 20170626100014) do
     t.integer  "factorial",  default: 0
   end
 
+  create_table "userlinks", force: :cascade do |t|
+    t.string   "url"
+    t.integer  "user_id"
+    t.integer  "instance_id"
+    t.string   "title"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["instance_id"], name: "index_userlinks_on_instance_id", using: :btree
+    t.index ["user_id"], name: "index_userlinks_on_user_id", using: :btree
+  end
+
+  create_table "userphotos", force: :cascade do |t|
+    t.string   "image"
+    t.integer  "image_file_size"
+    t.string   "image_content_type"
+    t.integer  "image_width"
+    t.integer  "image_height"
+    t.integer  "instance_id"
+    t.integer  "user_id"
+    t.string   "credit",             limit: 100
+    t.string   "caption",            limit: 100
+    t.datetime "created_at",                                 null: false
+    t.datetime "updated_at",                                 null: false
+    t.integer  "karma",                          default: 0, null: false
+    t.index ["instance_id"], name: "index_userphotos_on_instance_id", using: :btree
+    t.index ["user_id"], name: "index_userphotos_on_user_id", using: :btree
+  end
+
+  create_table "userphotoslots", force: :cascade do |t|
+    t.integer  "user_id"
+    t.integer  "userphoto_id"
+    t.integer  "ethtransaction_id"
+    t.integer  "activity_id"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+    t.index ["activity_id"], name: "index_userphotoslots_on_activity_id", using: :btree
+    t.index ["ethtransaction_id"], name: "index_userphotoslots_on_ethtransaction_id", using: :btree
+    t.index ["user_id"], name: "index_userphotoslots_on_user_id", using: :btree
+    t.index ["userphoto_id"], name: "index_userphotoslots_on_userphoto_id", using: :btree
+  end
+
   create_table "users", force: :cascade do |t|
     t.string   "email",                     default: ""
     t.string   "encrypted_password",        default: "",    null: false
@@ -728,4 +769,12 @@ ActiveRecord::Schema.define(version: 20170626100014) do
   add_foreign_key "roombookings", "users"
   add_foreign_key "rsvps", "instances"
   add_foreign_key "rsvps", "users"
+  add_foreign_key "userlinks", "instances"
+  add_foreign_key "userlinks", "users"
+  add_foreign_key "userphotos", "instances"
+  add_foreign_key "userphotos", "users"
+  add_foreign_key "userphotoslots", "activities"
+  add_foreign_key "userphotoslots", "ethtransactions"
+  add_foreign_key "userphotoslots", "userphotos"
+  add_foreign_key "userphotoslots", "users"
 end

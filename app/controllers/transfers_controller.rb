@@ -14,6 +14,9 @@ class TransfersController < ApplicationController
         recipient.accounts << Account.create(address: JSON.parse(create_call.body)['data'])
       end
     end
+    if params[:userphoto_id] != ''
+      userphoto = Userphoto.find(params[:userphoto_id]) 
+    end
     
     # account is created in theory, so now let's do the transaction
     # api = BidappApi.new
@@ -39,7 +42,7 @@ class TransfersController < ApplicationController
 
         a = Activity.create(user: recipient, item: current_user,
           ethtransaction: nil, addition: 0, txaddress: nil,
-          description: "received_from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})", blockchain_transaction: b
+          description: "received_from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})", blockchain_transaction: b, extra: params[:userphoto_id].blank? ? nil :  userphoto 
           )
         if b.save
           BlockchainHandlerJob.perform_later b
@@ -48,6 +51,10 @@ class TransfersController < ApplicationController
         recipient.latest_balance = recipient.latest_balance + params[:points].to_i
         sender.save
         recipient.save
+        if userphoto
+          userphoto.karma += params[:points].to_i
+          userphoto.save
+        end
         render json: {data: current_user}, status: 200
     rescue => e
       logger.warn('errs are ' + e.inspect)
