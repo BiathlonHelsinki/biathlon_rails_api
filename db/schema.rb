@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170810212345) do
+ActiveRecord::Schema.define(version: 20170812082656) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -379,6 +379,19 @@ ActiveRecord::Schema.define(version: 20170810212345) do
     t.boolean  "is_open",    default: false, null: false
     t.datetime "created_at",                 null: false
     t.datetime "updated_at",                 null: false
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.string   "item_type"
+    t.integer  "item_id"
+    t.integer  "user_id"
+    t.boolean  "pledges",    default: false, null: false
+    t.boolean  "comments",   default: true,  null: false
+    t.boolean  "scheduling", default: true,  null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
+    t.index ["item_type", "item_id"], name: "index_notifications_on_item_type_and_item_id", using: :btree
+    t.index ["user_id"], name: "index_notifications_on_user_id", using: :btree
   end
 
   create_table "onetimers", force: :cascade do |t|
@@ -756,6 +769,7 @@ ActiveRecord::Schema.define(version: 20170810212345) do
   add_foreign_key "instances", "places"
   add_foreign_key "instances_organisers", "instances"
   add_foreign_key "nfcs", "users"
+  add_foreign_key "notifications", "users"
   add_foreign_key "onetimers", "users"
   add_foreign_key "opensessions", "nodes"
   add_foreign_key "pledges", "users"
