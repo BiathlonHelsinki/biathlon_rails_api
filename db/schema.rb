@@ -385,11 +385,11 @@ ActiveRecord::Schema.define(version: 20170812082656) do
     t.string   "item_type"
     t.integer  "item_id"
     t.integer  "user_id"
-    t.boolean  "pledges",    default: false, null: false
-    t.boolean  "comments",   default: true,  null: false
-    t.boolean  "scheduling", default: true,  null: false
-    t.datetime "created_at",                 null: false
-    t.datetime "updated_at",                 null: false
+    t.boolean  "pledges"
+    t.boolean  "comments"
+    t.boolean  "scheduling"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
     t.index ["item_type", "item_id"], name: "index_notifications_on_item_type_and_item_id", using: :btree
     t.index ["user_id"], name: "index_notifications_on_user_id", using: :btree
   end

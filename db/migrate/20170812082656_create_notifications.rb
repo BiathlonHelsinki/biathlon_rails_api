@@ -3,9 +3,9 @@ class CreateNotifications < ActiveRecord::Migration[5.0]
     create_table :notifications do |t|
       t.references :item, polymorphic: true
       t.references :user, foreign_key: true
-      t.boolean :pledges, default: false, null: false
-      t.boolean :comments, default: true, null: false
-      t.boolean :scheduling, default: true, null: false
+      t.boolean :pledges
+      t.boolean :comments
+      t.boolean :scheduling
       t.timestamps
     end
   end
