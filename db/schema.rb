@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170812082656) do
+ActiveRecord::Schema.define(version: 20170813102936) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -752,6 +752,17 @@ ActiveRecord::Schema.define(version: 20170812082656) do
     t.index ["user_id", "role_id"], name: "index_users_roles_on_user_id_and_role_id", using: :btree
   end
 
+  create_table "userthoughts", force: :cascade do |t|
+    t.integer  "instance_id"
+    t.integer  "user_id"
+    t.text     "thoughts"
+    t.integer  "karma"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+    t.index ["instance_id"], name: "index_userthoughts_on_instance_id", using: :btree
+    t.index ["user_id"], name: "index_userthoughts_on_user_id", using: :btree
+  end
+
   add_foreign_key "accounts", "users"
   add_foreign_key "activities", "ethtransactions"
   add_foreign_key "authentications", "users"
@@ -791,4 +802,6 @@ ActiveRecord::Schema.define(version: 20170812082656) do
   add_foreign_key "userphotoslots", "ethtransactions"
   add_foreign_key "userphotoslots", "userphotos"
   add_foreign_key "userphotoslots", "users"
+  add_foreign_key "userthoughts", "instances"
+  add_foreign_key "userthoughts", "users"
 end
