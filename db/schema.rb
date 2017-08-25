@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170813102936) do
+ActiveRecord::Schema.define(version: 20170825111234) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -233,6 +233,7 @@ ActiveRecord::Schema.define(version: 20170813102936) do
     t.string   "sequence"
     t.integer  "proposal_id"
     t.boolean  "collapse_in_website",  default: false, null: false
+    t.boolean  "stopped"
     t.index ["place_id"], name: "index_events_on_place_id", using: :btree
   end
 
@@ -335,6 +336,7 @@ ActiveRecord::Schema.define(version: 20170813102936) do
     t.integer  "max_attendees"
     t.boolean  "registration_open",      default: true,  null: false
     t.boolean  "cancelled",              default: false, null: false
+    t.boolean  "survey_locked"
     t.index ["event_id"], name: "index_instances_on_event_id", using: :btree
     t.index ["place_id"], name: "index_instances_on_place_id", using: :btree
     t.index ["proposal_id"], name: "index_instances_on_proposal_id", using: :btree
@@ -651,6 +653,29 @@ ActiveRecord::Schema.define(version: 20170813102936) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "surveys", force: :cascade do |t|
+    t.integer  "user_id"
+    t.text     "never_visited"
+    t.text     "experiment_why"
+    t.text     "platform_benefits"
+    t.text     "different_contribution"
+    t.text     "welcoming_concept"
+    t.text     "physical_environment"
+    t.text     "website_etc"
+    t.text     "different_than_others"
+    t.text     "your_space"
+    t.boolean  "allow_excerpt"
+    t.boolean  "allow_identity"
+    t.boolean  "completed"
+    t.text     "features_benefit"
+    t.text     "improvements"
+    t.text     "clear_structure"
+    t.text     "want_from_culture"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+    t.index ["user_id"], name: "index_surveys_on_user_id", using: :btree
+  end
+
   create_table "transaction_types", force: :cascade do |t|
     t.string   "name"
     t.string   "slug"
@@ -794,6 +819,7 @@ ActiveRecord::Schema.define(version: 20170813102936) do
   add_foreign_key "roombookings", "users"
   add_foreign_key "rsvps", "instances"
   add_foreign_key "rsvps", "users"
+  add_foreign_key "surveys", "users"
   add_foreign_key "userlinks", "instances"
   add_foreign_key "userlinks", "users"
   add_foreign_key "userphotos", "instances"

@@ -73,79 +73,82 @@ class Instance < ApplicationRecord
   end
   
   def spend_from_blockchain
+    activity_cache = Array.new
+    pledge_cache = Array.new
     if published == true && spent_biathlon == false
       counter = cost_in_temps
-      activity_cache = Array.new
-      pledge_cache = Array.new
+      
+      
       if proposal
-        # api = BidappApi.new
-        proposal.pledges.unconverted.order(:created_at).each do |pledge| 
-          next if counter < 1
-          if pledge.pledge <= counter
-            next if pledge.converted == 1      # shouldn't happen here but just to be paranoid
-            # p 'converting pledge from ' + pledge.user.username + ' of ' + pledge.pledge.to_s
-            spent = pledge.pledge
-          elsif pledge.pledge > counter        # pledge overlaps what's needed so take just what's needed 
-            # p 'reducing pledge of ' + pledge.user.username + ' of ' + pledge.pledge.to_s
-            spent = counter
-            newpledge = Pledge.create(item: pledge.item, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
-            pledge.update_column(:pledge, counter)
+        if proposal.still_proposal?
+          pledge_object = proposal
+        else
+          pledge_object = event
+        end
+      else
+        pledge_object = event
+      end
+
+      pledge_object.pledges.unconverted.order(:created_at).each do |pledge| 
+        next if counter < 1
+        if pledge.pledge <= counter
+          next if pledge.converted == 1      # shouldn't happen here but just to be paranoid
+          # p 'converting pledge from ' + pledge.user.username + ' of ' + pledge.pledge.to_s
+          spent = pledge.pledge
+        elsif pledge.pledge > counter        # pledge overlaps what's needed so take just what's needed 
+          # p 'reducing pledge of ' + pledge.user.username + ' of ' + pledge.pledge.to_s
+          spent = counter
+          if pledge_object.class == Proposal
+            newitemrecipient = event
+          else
+            newitemrecipient = proposal
           end
-          pledge.update_column(:extra_info, 'Pledge spent at ' + Time.now.to_s)
-          pledge.update_column(:converted, 1)
-          pledge_cache.push(pledge)
-          counter -= spent
-          begin
+          newpledge = Pledge.create(item: newitemrecipient, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
+          pledge.update_column(:pledge, counter)
+        end
+        pledge.update_column(:extra_info, 'Pledge spent at ' + Time.now.to_s)
+        pledge.update_column(:converted, 1)
+        pledge_cache.push(pledge)
+        counter -= spent
+        begin
             # make the activity first
-            b = BlockchainTransaction.new(value: spent, account: pledge.user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
-            a = Activity.create(user: pledge.user, item: proposal, ethtransaction_id: nil, 
+          b = BlockchainTransaction.new(value: spent, account: pledge.user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
+          a = Activity.create(user: pledge.user, item: pledge_object, ethtransaction_id: nil, 
             description: "spent_a_pledge_on",  numerical_value: spent, 
             extra_info: 'which_was_scheduled_as',  addition: -1, txaddress: nil, blockchain_transaction: b)
             
-            # transaction = api.spend(pledge.user.accounts.primary.first.address, spent)
-            # if transaction['data']
-            #   pledge.user.accounts.primary.first.balance = pledge.user.accounts.primary.first.balance.to_i - spent
-            #   #pledge.user.update_balance_from_blockchain
-            #   pledge.user.save(validate: false)
-            #
-            #   et = nil
-            #
-            #   Timeout::timeout(3) {
-            #     while et.nil? do
-            #       et = Ethtransaction.find_by(txaddress: transaction['data'])
-            #     end
-            #   }
-            #   a.ethtransaction = et
-            #   a.txaddress = transaction['data']
-            if b.save
-              BlockchainHandlerJob.perform_later b
-              # a.save
-              activity_cache.push(a)
-            # elsif transaction['error']
-            #   return transaction['error']
-            end
-          rescue Exception => e
-            # don't write anything unless it goes to blockchain
-            logger.warn('spending error: ' + e.inspect)  
-            pledge.update_attribute(:converted, false)
-            pledge.update_attribute(:extra_info, nil)
-            return transaction
+
+          if b.save
+            BlockchainHandlerJob.perform_later b
+            # a.save
+            activity_cache.push(a)
+
           end
+        rescue Exception => e
+          # don't write anything unless it goes to blockchain
+          logger.warn('spending error: ' + e.inspect)  
+          pledge.update_attribute(:converted, false)
+          pledge.update_attribute(:extra_info, nil)
+          return transaction
         end
+      end
+      
+      if pledge_object.class == Proposal
         proposal.scheduled = true
         proposal.save!
-        self.spent_biathlon = true
       end
-      activity_cache.each do |ac|
-        ac.extra = self        
-        ac.save
-      end
-      pledge_cache.each do |pc|
-        pc.instance = self
-        pc.save
-      end
+      self.spent_biathlon = true
+    end
+    activity_cache.each do |ac|
+      ac.extra = self        
+      ac.save
+    end
+    pledge_cache.each do |pc|
+      pc.instance = self
+      pc.save
     end
   end
+ 
   
   
   def in_future?

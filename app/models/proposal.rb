@@ -13,11 +13,18 @@ class Proposal < ApplicationRecord
   after_create :add_to_activity_feed
   after_update :add_to_activity_feed_edited
   belongs_to :proposalstatus
+  has_one :event
   
   scope :archived, -> () { where(stopped: true) }
   scope :active, -> () { where(stopped: false) }
+  scope :still_in_proposal_form, -> () {includes(:instances).where("instances.id" => nil)}
+  
   before_save :update_column_caches
 
+  def still_proposal?
+    instances.published.empty?
+  end
+  
   def update_column_caches
     self.total_needed_with_recurrence_cached = total_needed_with_recurrence
     self.needed_array_cached = needed_array

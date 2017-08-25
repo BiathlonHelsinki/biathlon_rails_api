@@ -1,5 +1,6 @@
 class Pledge < ApplicationRecord
-  belongs_to :item, polymorphic: true
+  belongs_to :item, polymorphic: true, touch: true
+  has_many :activities, as: :item
   acts_as_paranoid
   belongs_to :user
   validates_presence_of :user_id, :pledge

@@ -89,7 +89,7 @@ class InstancesController < ApplicationController
   def instance_params
     params[:instance][:event_attributes] = params[:instance][:experiment_attributes]
     params[:instance].delete(:experiment_attributes)
-    the_params = params.require(:instance).permit(:published, :event_id, :place_id, :primary_sponsor_id, :is_meeting, :proposal_id,
+    the_params = params.require(:instance).permit(:published, :event_id, :place_id, :primary_sponsor_id, :is_meeting, :proposal_id, :survey_locked, 
     :secondary_sponsor_id, :cost_euros, :cost_bb, :sequence_id, :start_at, :end_at, :sequence, :allow_multiple_entry, :request_rsvp, 
     :request_registration, :parent_id, :image, :custom_bb_fee, :request_rsvp, :request_registration, :cancelled,
     :email_registrations_to, :question1_text, :question2_text, :question3_text, :question4_text, :boolean1_text, :send_to_pledgers,

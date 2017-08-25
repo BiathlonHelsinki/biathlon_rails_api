@@ -18,7 +18,7 @@ class Event < ApplicationRecord
   validates_presence_of :place_id, :start_at, :primary_sponsor_id, :sequence
   validate :name_present_in_at_least_one_locale
   before_save :update_image_attributes
-  
+  belongs_to :proposal
   has_many :pledges, as: :item,  dependent: :destroy
   before_validation :make_first_instance
   validate :at_least_one_instance
@@ -36,7 +36,7 @@ class Event < ApplicationRecord
   
   def make_first_instance
     if instances.empty?
-      instances << Instance.new(cost_bb: cost_bb, sequence: sequence, cost_euros: cost_euros, start_at: start_at, end_at: end_at,
+      instances << Instance.new(cost_bb: cost_bb, sequence: sequence + ".1", cost_euros: cost_euros, start_at: start_at, end_at: end_at,
                                    place_id: place_id, published: published, translations_attributes: [{locale: 'en', name: name(:en), description: description(:en)}])
     end                          
   end
