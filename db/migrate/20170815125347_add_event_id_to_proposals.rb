@@ -10,9 +10,11 @@ class AddEventIdToProposals < ActiveRecord::Migration[5.0]
     Pledge.unconverted.each do |p|
       next if p.item.class == Event
       next if p.item.still_proposal?
-      # next if p.item.event.nil?
-
-      p.item = p.item.event
+      if p.item.event.nil?
+        p.item = p.item.instances.first.event
+      else
+        p.item = p.item.event
+      end
       p.save
     end
   end
