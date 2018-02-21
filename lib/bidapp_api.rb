@@ -31,7 +31,7 @@ class BidappApi
   end
   
   def confirm(txhash)
-    response = HTTParty.post(API_URL + '/check_transaction', body: {txhash: txhash }, timeout: 6 )
+    response = HTTParty.get(API_URL + '/check_transaction',  {query: {txhash: txhash }, timeout: 6 })
     return response.body
   end
   
