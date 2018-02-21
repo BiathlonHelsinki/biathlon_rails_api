@@ -1,4 +1,5 @@
-class OnetimerSerializer < ActiveModel::Serializer
+class OnetimerSerializer 
+  include FastJsonapi::ObjectSerializer
   attributes :code
 
   
