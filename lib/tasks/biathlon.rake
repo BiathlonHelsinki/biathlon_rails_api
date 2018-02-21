@@ -86,13 +86,14 @@ namespace :bidapp do
       # p 'checking ' + tx.txaddress  
       check = api.confirm(tx.txaddress)
       tx.checked_confirmation_at = Time.now
-      if JSON.parse(check)['status'] == '0x1'
-        tx.update_column(:confirmed, true)
-        # p 'confirmed on blockchain ' + tx.txaddress
-      elsif check['status'] == '0x0'
-        # p 'No confirmation for ' + tx.txaddress
+      unless check.nil?
+        if JSON.parse(check)['status'] == '0x1'
+          tx.update_column(:confirmed, true)
+          # p 'confirmed on blockchain ' + tx.txaddress
+        elsif check['status'] == '0x0'
+          # p 'No confirmation for ' + tx.txaddress
+        end
       end
-
     end
   end
   
