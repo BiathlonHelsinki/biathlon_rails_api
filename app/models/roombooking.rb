@@ -1,8 +1,10 @@
 class Roombooking < ApplicationRecord
   belongs_to :user
+  belongs_to :booker, polymorphic: true
   belongs_to :ethtransaction
-  belongs_to :rate
-  validates_presence_of :user_id, :rate_id, :day
+  belongs_to :rate, optional: true
+  validates_presence_of :user_id, :points_needed
+  
   has_many :activities, as: :item, dependent: :destroy, autosave: true
   
   scope :between, -> (start_time, end_time) { 

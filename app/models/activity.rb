@@ -1,12 +1,13 @@
 class Activity < ApplicationRecord
   include Rails.application.routes.url_helpers
+  belongs_to :contributor, polymorphic: true, optional: true
   belongs_to :user
-  belongs_to :ethtransaction
+  belongs_to :ethtransaction, optional: true
   belongs_to :item, polymorphic: true
-  belongs_to :extra, polymorphic: true
-  belongs_to :onetimer
+  belongs_to :extra, polymorphic: true, optional: true
+  belongs_to :onetimer, optional: true
   has_one :instances_user
-  belongs_to :blockchain_transaction, autosave: true
+  belongs_to :blockchain_transaction, autosave: true, optional: true
   validates_presence_of :item_id, :item_type
   
   scope :by_user, ->(user_id) { where(user_id: user_id) }

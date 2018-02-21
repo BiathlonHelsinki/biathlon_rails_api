@@ -9,12 +9,12 @@ class NfcsController < ApplicationController
       render json: {error: 'No security key on card'}, status: 401
     else
       @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
-      
+
     end
     if @nfc.nil?
       render json: {error: 'no card found in db!'}, status: 401
     else
-      @nfc.update_attribute(:last_used, Time.current.utc)      
+      @nfc.update_attribute(:last_used, Time.current.utc)
       if @nfc.keyholder == true
         render json: {data: {access: 'BOTH', user: @nfc.user}}, status: 200
       elsif !Roombooking.find_by(day: Time.current.localtime.to_date).nil?
@@ -28,9 +28,9 @@ class NfcsController < ApplicationController
       end
     end
   end
-  
-  
-    
+
+
+
   def auth_door
     if params[:id].length == 8
       @nfc = Nfc.find_by(tag_address: params[:id])
@@ -42,7 +42,7 @@ class NfcsController < ApplicationController
     if @nfc.nil?
       render json: {error: 'no card found in db!'}, status: 401
     else
-      @nfc.update_attribute(:last_used, Time.current.utc)      
+      @nfc.update_attribute(:last_used, Time.current.utc)
       if @nfc.keyholder == true
         render json: {data: @nfc.user}, status: 200
       elsif !Roombooking.find_by(day: Time.current.localtime.to_date).nil?
@@ -56,7 +56,9 @@ class NfcsController < ApplicationController
       end
     end
   end
-  
+
+
+
   def unattached_users
     if params[:q].blank?
       @users = User.untagged.order(created_at: :desc)
@@ -65,11 +67,11 @@ class NfcsController < ApplicationController
       @users += User.where("lower(name) like '%" + params[:q].downcase + "%' OR lower(email)  LIKE '%" + params[:q].downcase + "%' OR lower(username) LIKE '%" + params[:q].downcase + "%'")
       @users.uniq!
     end
-    render json: @users, status: 200
+    render json: UserSerializer.new(@users).serialized_json, status: 200
   end
-  
+
   def erase_tag
-    @nfc = Nfc.find_by(tag_address: params[:id])
+    @nfc = Nfc.find_by(tag_address: params[:id]) #, security_code: params[:securekey])
     if @nfc.nil?
       render json: {error: 'Card is already blank, or at least not in our database!'}, status: 401
     else
@@ -80,11 +82,12 @@ class NfcsController < ApplicationController
       end
     end
   end
-  
+
+
   def user_from_tag
-    if params[:securekey] == '00000000'
-      @nfc = Nfc.find_by(tag_address: params[:id])
-    else
+    if params[:securekey] != '00000000'
+    #   render json: {error: 'no security code on tag!'}, status: 401
+    # else
       @nfc = Nfc.find_by(tag_address: params[:id], security_code: params[:securekey])
     end
     if @nfc.nil?
@@ -98,5 +101,25 @@ class NfcsController < ApplicationController
       end
     end
   end
-    
+
+  def verify_tag
+
+    if params[:securekey] == '00000000'
+      render json: {error: 'no security code on tag!'}, status: 401
+    elsif '0x' + params[:node_address] == Setting.first.options["contract_address"]
+      a = Account.find_by(address: '0x' + params[:user_address]);
+      @user = a.user
+      nfc = Nfc.find_by(user: @user, tag_address: params[:tag_address], security_code: params[:securekey])
+      if nfc
+        render json: {data: nfc.user}, status: 200
+      else
+        render json: {error: 'No user found with this tag!'}, status: 401
+      end
+    else
+      #  deal with other nodes later
+      render json: {error: 'Invalid Biathlon node!'}, status: 401
+    end
+
+  end
+
 end

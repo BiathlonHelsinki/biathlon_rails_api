@@ -22,7 +22,7 @@ class BidappApi
   def api_post(url = '/', options)
     begin
       response = HTTParty.post(API_URL + url, body: options, timeout: 12)
-      JSON.parse(response.body)['data']
+      JSON.parse(response.body)
     rescue HTTParty::Error => e
       JSON.parse({error: "Error from #{API_URL + url}: #{e}"}.to_json)
     rescue StandardError => e
@@ -42,7 +42,7 @@ class BidappApi
     # logger.info('mint output is ' + response.body.inspect)
     json = JSON.parse(response.body)
     begin
-      if json['status'] == 'success'
+      if json['success']
         return json
       else
         return {status: 'error', message: json['message']}.as_json

@@ -1,3 +1,5 @@
+require 'json'
+
 def get_feed(url = '')
   response = HTTParty.get(Figaro.env.dapp_address + url)
   return response.parsed_response
@@ -38,6 +40,36 @@ end
 
 
 namespace :bidapp do
+
+
+  desc 'Convert Temps to points from file'
+  task convert_temps: :environment do
+    file = File.read('/tmp/temps.json')
+    data_hash = JSON.parse(file)['data']
+    data_hash['accounts'].each do |account, values|
+      points = values['biathlon'].to_i
+      b = BlockchainTransaction.new(value: points, account: Account.find_by(address: account), 
+                                     transaction_type: TransactionType.find_by(name: 'Create'))
+      acc = Account.find_by(address: account)
+      if acc.nil?
+        puts 'no account for ' + account
+        next
+      end
+      user = acc.user
+
+      if user.nil?
+        puts 'no user for ' + account
+      else
+        a = Activity.create(user: user, item_type: 'Post', item_id: 31, 
+          addition: 1, ethtransaction: nil, description: 'migrated_temps_from_temporary', numerical_value: points,
+           blockchain_transaction: b)
+        if b.save
+          BlockchainHandlerJob.set(wait: 1.minutes).perform_later b
+        end  
+        puts 'should populate ' + account + ' with ' + points.to_s + ' points'
+      end
+    end
+  end
   
   desc 'Grab missing blockchain transactions'
   task submit_missing: :environment do

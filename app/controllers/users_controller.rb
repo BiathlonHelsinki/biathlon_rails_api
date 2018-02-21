@@ -1,11 +1,16 @@
 class UsersController < ApplicationController
   include ActiveHashRelation
-  
+
   #skip_before_filter :authenticate_user!, only: [:create]
-  before_action :authenticate_hardware!, only: [:link_to_nfc]
+  before_action :authenticate_hardware!, only: [:link_to_nfc, :get_eth_address]
   before_action :authenticate_user!, only: [:resubmit, :respend]
   before_action :authenticate_admin,  only: [:resubmit, :respend]
-  
+
+  def get_eth_address
+    @user = User.friendly.find(params[:id])
+    render json: {"address" => @user.get_eth_address}, status: 200
+  end
+
   def get_balance
     @user = User.friendly.find(params[:id])
     # balance = 0
@@ -21,7 +26,7 @@ class UsersController < ApplicationController
     GetbalanceJob.perform_later @user
     render json: {data: @user.latest_balance}, status: 200
   end
-    
+
   def link_temporary_tag
     @user = User.friendly.find(params[:user_id])
     @tag = Onetimer.find(params[:tag_id])
@@ -38,7 +43,7 @@ class UsersController < ApplicationController
           else
 
             render json: {error: @user.errors.as_json(full_messages: true) }, status: :unprocessable_entity
-          end 
+          end
         else
           render json: {error: 'User already attended this activity'}.to_json, status: :unprocessable_entry
         end
@@ -59,12 +64,22 @@ class UsersController < ApplicationController
       end
     end
   end
-      
-      
+
+  def check_pin
+    @user = User.friendly.find(params[:id])
+    if @user.pin == Digest::MD5.hexdigest(params[:pin])
+      render json: UserSerializer.new(@user).serialized_json
+    else
+      render json: {error: 'Incorrect PIN'}, status: 403
+    end
+  end
+
   def link_to_nfc
     @user = User.friendly.find(params[:id])
     # check for existing NFC
     existing = Nfc.find_by(tag_address: params[:tag_address])
+    # logger.warn('looking for ' + params[:tag_address])
+    # logger.warn('existing is ' + existing.inspect)
     if existing.nil?
       # logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.inspect)
       begin
@@ -83,11 +98,11 @@ class UsersController < ApplicationController
       render json: {error: {message: 'That card already belongs to ' + existing.user.display_name, user: existing.user}} , status: :unprocessable_entity
     end
   end
-  
+
   def resubmit
     # be very specific here
-    
-    @iu = InstancesUser.find_by(instance_id: params[:instance_id], id: params[:id], user_id: params[:user_id])  
+
+    @iu = InstancesUser.find_by(instance_id: params[:instance_id], id: params[:id], user_id: params[:user_id])
     if @iu.nil?
       render json: {error: 'Cannot find this instance/user'}, status: :unprocessable_entity
     else
@@ -101,7 +116,7 @@ class UsersController < ApplicationController
       # logger.warn('attempting to resubmit to ' + @iu.user.accounts.first.address + ' for ' + points.to_s)
       api = BidappApi.new
       begin
-        
+
         transaction = api.mint(@iu.user.accounts.first.address, points)
         @iu.user.accounts.first.balance = @iu.user.accounts.first.balance.to_i + points
         # logger.warn('new transaction is ' + transaction)
@@ -120,15 +135,15 @@ class UsersController < ApplicationController
           render json: {error: 'errors are ' + activity.errors.inspect }, status: :unprocessable_entity
 
         end
-      
+
       rescue
         # don't write anything unless it goes to blockchain
         render json: {error: 'minting error'}, status: :unprocessable_entity
       end
     end
-    
+
   end
-  
+
   def respend
     @user = User.find(params[:id])
     api = BidappApi.new
@@ -144,14 +159,14 @@ class UsersController < ApplicationController
     rescue
       render json: {error: 'spending error'}, status: :unprocessable_entity
     end
-    
+
   end
-  
+
   def show
     user = User.find(params[:id])
     render(json: UserSerializer.new(user).to_json)
   end
-  
+
   def index
     if params[:q].blank?
       users = User.all
@@ -164,5 +179,6 @@ class UsersController < ApplicationController
       json: UserSerializer.new(users)
       )
   end
-  
+
+
 end

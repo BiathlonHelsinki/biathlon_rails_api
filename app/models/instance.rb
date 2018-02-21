@@ -1,6 +1,5 @@
 class Instance < ApplicationRecord
-
-  belongs_to :event, foreign_key: 'event_id'
+  belongs_to :event
   belongs_to :place
   translates :name, :description, :fallbacks_for_empty_translations => true
   accepts_nested_attributes_for :translations, :reject_if => proc {|x| x['name'].blank? && x['description'].blank? }
@@ -8,9 +7,10 @@ class Instance < ApplicationRecord
   extend FriendlyId
   friendly_id :name_en , :use => [ :slugged, :finders , :history]
   mount_uploader :image, ImageUploader
-  validates_presence_of :place_id, :start_at
-  validates_uniqueness_of :sequence
-  belongs_to :proposal
+  validates_presence_of :place_id, :start_at, :end_at, :custom_bb_fee,  :cost_bb, :room_needed, :price_public, :price_stakeholders
+  # validates_uniqueness_of :sequence
+  belongs_to :proposal, optional: true
+  belongs_to :idea
   has_many :pledges
   has_many :instances_users
   has_many :instances_organisers
@@ -72,13 +72,18 @@ class Instance < ApplicationRecord
     [event.primary_sponsor, event.secondary_sponsor, organisers].compact.uniq
   end
   
+  def checked_in_so_far
+    instances_users.where(visit_date: Time.current.localtime.to_date).size + onetimers.today(Time.current.localtime.to_date).size
+  end
+
+
   def spend_from_blockchain
     activity_cache = Array.new
     pledge_cache = Array.new
     if published == true && spent_biathlon == false
       counter = cost_in_temps
       
-      
+            
       if proposal
         if proposal.still_proposal?
           pledge_object = proposal
@@ -86,66 +91,69 @@ class Instance < ApplicationRecord
           pledge_object = event
         end
       else
-        pledge_object = event
+        pledge_object = event.idea
       end
+      if pledge_object.pledges.unconverted.sum(&:pledge) >= counter
 
-      pledge_object.pledges.unconverted.order(:created_at).each do |pledge| 
-        next if counter < 1
-        if pledge.pledge <= counter
-          next if pledge.converted == 1      # shouldn't happen here but just to be paranoid
-          # p 'converting pledge from ' + pledge.user.username + ' of ' + pledge.pledge.to_s
-          spent = pledge.pledge
-        elsif pledge.pledge > counter        # pledge overlaps what's needed so take just what's needed 
-          # p 'reducing pledge of ' + pledge.user.username + ' of ' + pledge.pledge.to_s
-          spent = counter
-          if pledge_object.class == Proposal
-            newitemrecipient = event
-          else
-            newitemrecipient = proposal
+        pledge_object.pledges.unconverted.order(:created_at).each do |pledge| 
+          next if counter < 1
+          if pledge.pledge <= counter
+            next if pledge.converted == 1      # shouldn't happen here but just to be paranoid
+            # p 'converting pledge from ' + pledge.user.username + ' of ' + pledge.pledge.to_s
+            spent = pledge.pledge
+          elsif pledge.pledge >= counter        # pledge overlaps what's needed so take just what's needed 
+            # p 'reducing pledge of ' + pledge.user.username + ' of ' + pledge.pledge.to_s
+            spent = counter
+            if pledge_object.class == Proposal
+              newitemrecipient = event
+            else
+              newitemrecipient = proposal
+            end
+            newpledge = Pledge.create(item: newitemrecipient, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
+            pledge.update_column(:pledge, counter)
           end
-          newpledge = Pledge.create(item: newitemrecipient, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
-          pledge.update_column(:pledge, counter)
-        end
-        pledge.update_column(:extra_info, 'Pledge spent at ' + Time.now.to_s)
-        pledge.update_column(:converted, 1)
-        pledge_cache.push(pledge)
-        counter -= spent
-        begin
-            # make the activity first
-          b = BlockchainTransaction.new(value: spent, account: pledge.user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
-          a = Activity.create(user: pledge.user, item: pledge_object, ethtransaction_id: nil, 
-            description: "spent_a_pledge_on",  numerical_value: spent, 
-            extra_info: 'which_was_scheduled_as',  addition: -1, txaddress: nil, blockchain_transaction: b)
-            
+          pledge.update_attribute(:spent_at, Time.current.utc)
+          pledge.update_column(:extra_info, 'pledge_spent_at')
+          pledge.update_column(:converted, 1)
+          pledge_cache.push(pledge)
+          counter -= spent
+          begin
+              # make the activity first
+            b = BlockchainTransaction.new(value: spent, account: pledge.user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
+            a = Activity.create(user: pledge.user, item: pledge_object, ethtransaction_id: nil, 
+              description: "spent_a_pledge_on",  numerical_value: spent, 
+              extra_info: 'which_was_scheduled_as',  addition: -1, txaddress: nil, blockchain_transaction: b)
+              
 
-          if b.save
-            BlockchainHandlerJob.perform_later b
-            # a.save
-            activity_cache.push(a)
+            if b.save
+              BlockchainHandlerJob.perform_later b
+              # a.save
+              activity_cache.push(a)
 
+            end
+          rescue Exception => e
+            # don't write anything unless it goes to blockchain
+            logger.warn('spending error: ' + e.inspect)  
+            pledge.update_attribute(:converted, false)
+            pledge.update_attribute(:extra_info, nil)
+            return transaction
           end
-        rescue Exception => e
-          # don't write anything unless it goes to blockchain
-          logger.warn('spending error: ' + e.inspect)  
-          pledge.update_attribute(:converted, false)
-          pledge.update_attribute(:extra_info, nil)
-          return transaction
         end
+        
+        if pledge_object.class == Proposal
+          proposal.scheduled = true
+          proposal.save!
+        end
+        self.spent_biathlon = true
       end
-      
-      if pledge_object.class == Proposal
-        proposal.scheduled = true
-        proposal.save!
+      activity_cache.each do |ac|
+        ac.extra = self        
+        ac.save
       end
-      self.spent_biathlon = true
-    end
-    activity_cache.each do |ac|
-      ac.extra = self        
-      ac.save
-    end
-    pledge_cache.each do |pc|
-      pc.instance = self
-      pc.save
+      pledge_cache.each do |pc|
+        pc.instance = self
+        pc.save
+      end
     end
   end
  

@@ -1,32 +1,38 @@
 class Event < ApplicationRecord
-
-  acts_as_nested_set
-  has_many :instances, dependent: :destroy
+  belongs_to :idea, optional: true
   belongs_to :place
-  belongs_to :primary_sponsor, class_name: 'User'
-  belongs_to :secondary_sponsor, class_name: 'User'
+  belongs_to :primary_sponsor, polymorphic: true  
+  has_many :instances, dependent: :destroy
   translates :name, :description, :fallbacks_for_empty_translations => true
   accepts_nested_attributes_for :translations, :reject_if => proc {|x| x['name'].blank? && x['description'].blank? }
-  belongs_to :place
+  accepts_nested_attributes_for :instances, :reject_if => proc {|x| x['start_at'].blank? || x['end_at'].blank? }
+  acts_as_nested_set
+  belongs_to :secondary_sponsor, class_name: 'User'
   has_many :activities, as: :item,  dependent: :destroy
-  # has_many :events_users
-  # has_many :users,  through: :events_users
   resourcify
   extend FriendlyId
   friendly_id :name_en , :use => [ :slugged, :finders ]# :history]
   mount_uploader :image, ImageUploader
-  validates_presence_of :place_id, :start_at, :primary_sponsor_id, :sequence
+  validates_presence_of :place_id, :start_at, :primary_sponsor_id,  :primary_sponsor_type
   validate :name_present_in_at_least_one_locale
   before_save :update_image_attributes
-  belongs_to :proposal
+  belongs_to :proposal, optional: true
   has_many :pledges, as: :item,  dependent: :destroy
   before_validation :make_first_instance
   validate :at_least_one_instance
-  validates_uniqueness_of :sequence
+ #validates_uniqueness_of :sequence
+  after_save :convert_idea
   
   scope :published, -> () { where(published: true) }
   scope :has_events_on, -> (*args) { where(['published is true and cancelled is false and (date(start_at) = ? OR (end_at is not null AND (date(start_at) <= ? AND date(end_at) >= ?)))', args.first, args.first, args.first] )}
-  
+
+  def convert_idea
+    if idea
+      idea.status = 'converted'
+      idea.converted = self
+      idea.save
+    end
+  end
   
   def at_least_one_instance
     if instances.empty?

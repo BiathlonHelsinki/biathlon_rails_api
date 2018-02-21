@@ -5,17 +5,17 @@ class RoombookingsController < ApplicationController
 
   def create
     @user = User.find(params[:user_id])
-    @current_rate = Rate.get_current
-    @roombooking = Roombooking.new(user: @user, rate: @current_rate, day: params[:day], purpose: params[:purpose])
+
+    @roombooking = Roombooking.new(user: @user, booker_type: params[:booker_type], booker_id: params[:booker_id], points_needed: params[:cost], day: params[:start_at].to_date, start_at: params[:start_at], end_at: params[:end_at], purpose: params[:purpose])
     # api = BidappApi.new
     @user.update_balance_from_blockchain
-    if @user.latest_balance < @current_rate.room_cost
-      render json: { error: 'You do not have enough Temps to do this'}, status: 400
+    if @user.latest_balance < params[:cost].to_i
+      render json: { error: 'You do not have enough points to do this'}, status: 400
     else
       begin
 
         # NEW: Queue this shit for processing later
-        b = BlockchainTransaction.new( value: @current_rate.room_cost, account: @user.accounts.first, transaction_type: TransactionType.find_by(name: 'Spend'))
+        b = BlockchainTransaction.new( value: params[:cost], account: @user.accounts.first, transaction_type: TransactionType.find_by(name: 'Spend'))
         a =  Activity.new(user: @user, item: @roombooking,
                             addition: -1,  description: "booked_the_back_room_on",
                       extra_info: params[:purpose].blank? ? nil : " (for: #{params[:purpose]})", blockchain_transaction: b )
@@ -24,13 +24,14 @@ class RoombookingsController < ApplicationController
             @roombooking.activities << a
             a.save
             BlockchainHandlerJob.perform_later b
-            @user.latest_balance = @user.latest_balance - @current_rate.room_cost
+            @user.latest_balance = @user.latest_balance -  @roombooking.points_needed
             @user.save
 
           render json: {data: @roombooking}, status: 200
         else
-           logger.warn 'err:' + a.errors.inspect
-          return {"error" => "error", "message" => b.errors.inspect}
+          logger.warn 'err:' + a.errors.inspect
+
+          render json: {"error" => "error", "message" => @roombooking.errors.full_messages}, status: 400
         end
         
         # old code below
@@ -55,6 +56,7 @@ class RoombookingsController < ApplicationController
 #           end
 
       rescue => e
+        logger.warn(e.inspect)
         render json: {error: e.inspect }, status: :unprocessable_entity
       end 
     end 

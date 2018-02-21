@@ -14,14 +14,20 @@ class BlockchainHandlerJob < ApplicationJob
         transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value)
       end
       sleep 3
-      if transaction['data']
-        et = Ethtransaction.find_by(txaddress: transaction['data'])
+      if transaction
+        logger.warn(transaction.inspect)
+        et = Ethtransaction.find_by(txaddress: transaction['success'])
         blockchaintransaction.ethtransaction = et
         blockchaintransaction.activity.ethtransaction = et
         blockchaintransaction.submitted_at = Time.current
         blockchaintransaction.save
         blockchaintransaction.activity.save
- 
+        if blockchaintransaction.activity.item_type == 'Stake'
+          if blockchaintransaction.activity.item.ethtransaction.nil?
+            blockchaintransaction.activity.item.ethtransaction = et
+            blockchaintransaction.activity.item.save
+          end
+        end
       else
         logger.warn('errors: ' + transaction.inspect)
       end

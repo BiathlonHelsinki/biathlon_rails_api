@@ -7,7 +7,7 @@ class User < ActiveRecord::Base
   devise :database_authenticatable, :registerable,
           :recoverable, :rememberable, :trackable,
           :omniauthable #, :confirmable
-  has_many :accounts
+  has_many :accounts, as: :holder
   has_many :authentications, :dependent => :destroy
   accepts_nested_attributes_for :authentications, :reject_if => proc { |attr| attr['username'].blank? }
   acts_as_token_authenticatable
@@ -17,6 +17,7 @@ class User < ActiveRecord::Base
   has_many :activities
   has_many :onetimers
   has_many :nfcs
+  has_many :stakes, dependent: :destroy, as: :owner
   # has_and_belongs_to_many :events
   # has_many :activities, as: :item
   has_many :instances_users
@@ -28,6 +29,21 @@ class User < ActiveRecord::Base
   has_and_belongs_to_many :events  
 
 
+  def charge_vat?
+    false
+  end
+
+  def has_pin
+    !pin.blank? 
+  end
+
+  def eth_address
+    if accounts.empty?   
+      # TODO -- create a new account here and return the eth address
+    else
+      accounts.first.address
+    end
+  end
 
   def events_attended
     instances.size
@@ -43,6 +59,28 @@ class User < ActiveRecord::Base
     else
       instances_users.where(user: self, instance: instances.order(:created_at).last).first.visit_date
     end
+  end
+
+  def get_eth_address
+    if accounts.empty?
+      @dapp_status = Net::Ping::TCP.new(ENV['dapp_server'],  ENV['dapp_port'], 1).ping?
+      if !@dapp_status
+        return {"status" => "error", "message" => 'The Biathlon Dapp is not running!'}
+      else
+        begin
+          create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
+          if JSON.parse(create_call.body)['success'].blank?
+            logger.warn('error is ' + JSON.parse(create_call.body)['error'].inspect)
+            exit
+          else
+            accounts << Account.create(address: JSON.parse(create_call.body)['success'])
+          end
+        rescue Exception => e
+          return {"status" => "error", "message" => e.inspect }
+        end
+      end
+    end
+    return accounts.first.address
   end
   
   def copy_password
@@ -97,27 +135,7 @@ class User < ActiveRecord::Base
         return false
       end
     end
-    # else
-      # check if user has ethereum account yet
-      if accounts.empty?
-        @dapp_status = Net::Ping::TCP.new(ENV['dapp_server'],  ENV['dapp_port'], 1).ping?
-        if !@dapp_status
-          return {"status" => "error", "message" => 'The Biathlon Dapp is not running!'}
-        else
-          begin
-            create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
-            if JSON.parse(create_call.body)['data'].blank?
-              logger.warn('error is ' + JSON.parse(create_call.body)['error'].inspect)
-              exit
-            else
-              accounts << Account.create(address: JSON.parse(create_call.body)['data'])
-            end
-          rescue Exception => e
-          
-            error = e
-          end
-        end
-      end
+      
       if error.nil?
         # account is created in theory, so now let's do the transaction
         # no longer logging blockchain on the fly, but queing to process later
@@ -125,7 +143,7 @@ class User < ActiveRecord::Base
 
         begin
           # 1. make activity first with blank transaction
-           b = BlockchainTransaction.new( value: points, account: self.accounts.first, transaction_type: TransactionType.find_by(name: 'Create'))
+          b = BlockchainTransaction.new( value: points, account: self.get_eth_address, transaction_type: TransactionType.find_by(name: 'Create'))
           a = Activity.create(user: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
           
           # 2. make instance_user
@@ -187,6 +205,10 @@ class User < ActiveRecord::Base
       end
 
     end
+  end
+  
+  def is_member?
+    !stakes.where(includes_share: true).empty? && accepted_agreement == true
   end
 
   def self.find_for_oauth(auth, signed_in_resource = nil)
