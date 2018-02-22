@@ -61,9 +61,8 @@ class Group < ApplicationRecord
       else
         begin
           create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account', body: {password: self.geth_pwd})
-          if JSON.parse(create_call.body)['success'].blank?
-            logger.warn('error is ' + JSON.parse(create_call.body)['error'].inspect)
-            exit
+          if JSON.parse(create_call.body)['success'].blank?        
+            return {"status" => "error", "message" => e.inspect }
           else
             accounts << Account.create(address: JSON.parse(create_call.body)['success'])
           end

@@ -1,5 +1,10 @@
 class BlockchainHandlerJob < ApplicationJob
   queue_as :default
+  
+  include ActiveJob::Retry.new(strategy: :constant,
+                               limit: 5,
+                               delay: 5.minutes)
+
 
   def perform(blockchaintransaction)
     if !blockchaintransaction.confirmed_at.nil?
@@ -15,23 +20,24 @@ class BlockchainHandlerJob < ApplicationJob
       end
       sleep 3
       if transaction
-        logger.warn(transaction.inspect)
-        et = Ethtransaction.find_by(txaddress: transaction['success'])
-        blockchaintransaction.ethtransaction = et
-        blockchaintransaction.activity.ethtransaction = et
-        blockchaintransaction.submitted_at = Time.current
-        blockchaintransaction.save
-        blockchaintransaction.activity.save
-        if blockchaintransaction.activity.item_type == 'Stake'
-          if blockchaintransaction.activity.item.ethtransaction.nil?
-            blockchaintransaction.activity.item.ethtransaction = et
-            blockchaintransaction.activity.item.save
+        if transaction['status'] != 'error'
+          logger.warn(transaction.inspect)
+          et = Ethtransaction.find_by(txaddress: transaction['success'])
+          blockchaintransaction.ethtransaction = et
+          blockchaintransaction.activity.ethtransaction = et
+          blockchaintransaction.submitted_at = Time.current
+          blockchaintransaction.save
+          blockchaintransaction.activity.save
+          if blockchaintransaction.activity.item_type == 'Stake'
+            if blockchaintransaction.activity.item.ethtransaction.nil?
+              blockchaintransaction.activity.item.ethtransaction = et
+              blockchaintransaction.activity.item.save
+            end
           end
+        else
+          raise "DappException"
         end
-      else
-        logger.warn('errors: ' + transaction.inspect)
       end
-      
     end
   end
 end

@@ -80,18 +80,20 @@ namespace :bidapp do
       
   desc 'Confirm all unconfirmed Ethereum transactions'
   task confirm_all: :environment do
-    api = BidappApi.new
+   
     transactions = Ethtransaction.unconfirmed.order(id: :asc)
     transactions.each do |tx|
       # p 'checking ' + tx.txaddress  
       check = api.confirm(tx.txaddress)
-      tx.checked_confirmation_at = Time.now
-      unless check.nil?
-        if JSON.parse(check)['status'] == '0x1'
-          tx.update_column(:confirmed, true)
-          # p 'confirmed on blockchain ' + tx.txaddress
-        elsif check['status'] == '0x0'
-          # p 'No confirmation for ' + tx.txaddress
+      tx.update_column(:checked_confirmation_at,  Time.now)
+      unless check == 'null'
+        if JSON.parse(check)
+          if JSON.parse(check)['status'] == '0x1'
+            tx.update_column(:confirmed, true)
+            # p 'confirmed on blockchain ' + tx.txaddress
+          elsif check['status'] == '0x0'
+            # p 'No confirmation for ' + tx.txaddress
+          end
         end
       end
     end
