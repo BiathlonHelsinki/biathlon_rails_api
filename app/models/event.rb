@@ -13,6 +13,7 @@ class Event < ApplicationRecord
   extend FriendlyId
   friendly_id :name_en , :use => [ :slugged, :finders ]# :history]
   mount_uploader :image, ImageUploader
+
   validates_presence_of :place_id, :start_at, :primary_sponsor_id,  :primary_sponsor_type
   validate :name_present_in_at_least_one_locale
   before_save :update_image_attributes

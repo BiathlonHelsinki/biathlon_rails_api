@@ -19,6 +19,15 @@ class BidappApi
     end
   end
   
+  def get_balance(address)
+    begin
+      response = HTTParty.get(API_URL + '/get_account_balance', {query: {account: address}, timeout: 10})
+      JSON.parse(response.body)
+    rescue => e
+      return e.inspect
+    end
+  end
+
   def api_post(url = '/', options)
     begin
       response = HTTParty.post(API_URL + url, body: options, timeout: 12)
@@ -38,7 +47,7 @@ class BidappApi
   def mint(recipient, tokens)
     # logger = ActiveSupport::Logger.new(STDOUT)
     # logger.level = :info
-    response = HTTParty.post(API_URL + '/mint', body: {recipient: recipient, tokens: tokens}, timeout: 6 )
+    response = HTTParty.post(API_URL + '/mint', body: {recipient: recipient, tokens: tokens}, timeout: 10 )
     # logger.info('mint output is ' + response.body.inspect)
     json = JSON.parse(response.body)
     begin

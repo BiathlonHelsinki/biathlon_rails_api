@@ -54,6 +54,7 @@ gem 'awesome_nested_set'
 gem 'cancancan'
 gem 'carrierwave'
 gem 'carrierwave-aws'
+
 gem "daemons"
 gem 'delayed_job_active_record'
 gem 'devise'

@@ -14,7 +14,7 @@ class EventsController < ApplicationController
       end
       render json: @event, status: :created
     else
-      render json: @event.errors, status: :unprocessable_entity
+      render json: {"error" => @event.errors.inspect}, status: :unprocessable_entity
     end
   end
   
@@ -44,7 +44,7 @@ class EventsController < ApplicationController
   
   def event_params
     params.require(:event).permit(:place_id, :start_at, :end_at, :sequence, :published, :image, :primary_sponsor_id, :primary_sponsor_type,
-            :secondary_sponsor_id, :cost_euros, :cost_bb, :idea_id,
+            :secondary_sponsor_id, :cost_euros, :cost_bb, :idea_id, :remote_image_url,
             instances_attributes: [:id, :_destroy, :event_id, :cost_bb, :price_public, :start_at, :end_at, :image, 
                                     :custom_bb_fee,
                                     :room_needed, :allow_others, :price_stakeholders, :place_id, 

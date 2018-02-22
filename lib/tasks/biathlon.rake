@@ -80,7 +80,7 @@ namespace :bidapp do
       
   desc 'Confirm all unconfirmed Ethereum transactions'
   task confirm_all: :environment do
-   
+    api = BidappApi.new
     transactions = Ethtransaction.unconfirmed.order(id: :asc)
     transactions.each do |tx|
       # p 'checking ' + tx.txaddress  
@@ -118,7 +118,7 @@ namespace :bidapp do
     # check external accounts
     api = BidappApi.new
     externals = Account.external.each do |acc|
-      api_data = api.api_post('/account_balance', {account: acc.address})
+      api_data = api.get('/account_balance', {account: acc.address})
       acc.balance = api_data.to_i rescue 0
       if acc.changed?
         acc.save
@@ -129,6 +129,64 @@ namespace :bidapp do
     end
   end
   
+  desc 'one-time audit after starting kp'
+  task kp_fix: :environment do
+    api = BidappApi.new
+    temps = JSON.parse(File.read("/Users/fail/temps.json"))
+    had_temps = []
+    temps["data"]["accounts"].each do |account|
+      dbacc = Account.find_by(address: account.first)
+      next if dbacc.nil?
+      next if dbacc.holder.nil?
+      holder = dbacc.holder
+      had_temps.push(holder)
+      if holder.stakes.paid.empty?
+        puts "User " + holder.display_name + " should have " + account.last["biathlon"].to_s + " points"
+      else
+        should_have = (holder.stakes.paid.sum(&:amount) * 500) + account.last["biathlon"].to_i
+        puts "STAKEHOLDER " + holder.display_name + " should have " + should_have.to_s + " points"
+        # puts "   --  " + holder.stakes.paid.sum(&:amount).to_s + ' stakes and ' + account.last["biathlon"] + ' Temps'
+        api_data = api.get_balance(holder.get_eth_address)
+        puts "     -- actually has " + api_data['success']
+
+        if (should_have.to_i - api_data['success'].to_i) > 0 
+          puts "  should mint " + (should_have.to_i - api_data['success'].to_i).to_s
+          mint = api.mint(holder.get_eth_address, (should_have.to_i - api_data['success'].to_i))
+          sleep 40
+        elsif (should_have.to_i - api_data['success'].to_i) < 0
+          puts "  should spend " + ((should_have.to_i - api_data['success'].to_i) * -1).to_s
+          spend = api.spend(holder.get_eth_address, ( (should_have.to_i - api_data['success'].to_i) * -1) )
+          sleep 40
+        end
+      end
+    end
+    Stake.paid.each do |stake|
+      next if had_temps.include?(stake.owner)
+      should_have = (stake.owner.stakes.paid.sum(&:amount) * 500)
+      had_temps.push(stake.owner)
+      puts "STAKEHOLDER " + stake.owner.display_name + " should have " + should_have.to_s + " points from " + stake.owner.stakes.paid.sum(&:amount).to_s + ' stakes'
+      api_data = api.get_balance(stake.owner.get_eth_address)
+      puts "     -- actually has " + api_data['success']
+      if (should_have.to_i - api_data['success'].to_i) > 0 
+        puts "  should mint " + (should_have.to_i - api_data['success'].to_i).to_s
+        mint = api.mint(holder.get_eth_address, (should_have.to_i - api_data['success'].to_i))
+        sleep 40
+      elsif (should_have.to_i - api_data['success'].to_i) < 0
+        puts "  should spend " + ((should_have.to_i - api_data['success'].to_i) * -1).to_s
+        spend = api.spend(holder.get_eth_address, ( (should_have.to_i - api_data['success'].to_i) * -1) )
+        sleep 40
+      end      
+      puts " "
+    end
+    # had_temps.each do |stakeholder|
+    #   if stakeholder.accounts.empty?
+    #     puts 'no eth address for ' +  stakeholder.display_name
+    #   else
+    #     puts stakeholder.accounts.first.address
+    #   end
+    # end
+  end
+
 
   desc 'audit user accounts on blockchain'
   task audit_users: :environment  do

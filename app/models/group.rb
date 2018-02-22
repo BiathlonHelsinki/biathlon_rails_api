@@ -8,6 +8,7 @@ class Group < ApplicationRecord
    source: :user
   extend FriendlyId
   has_many :accounts, as: :holder
+  has_many :pledges, as: :pledger
   friendly_id :name , :use => [ :slugged, :finders, :history]
   mount_uploader :avatar, ImageUploader
   before_save :update_avatar_attributes
