@@ -151,12 +151,12 @@ namespace :bidapp do
 
         if (should_have.to_i - api_data['success'].to_i) > 0 
           puts "  should mint " + (should_have.to_i - api_data['success'].to_i).to_s
-          mint = api.mint(holder.get_eth_address, (should_have.to_i - api_data['success'].to_i))
-          sleep 40
+          # mint = api.mint(holder.get_eth_address, (should_have.to_i - api_data['success'].to_i))
+          # sleep 40
         elsif (should_have.to_i - api_data['success'].to_i) < 0
           puts "  should spend " + ((should_have.to_i - api_data['success'].to_i) * -1).to_s
-          spend = api.spend(holder.get_eth_address, ( (should_have.to_i - api_data['success'].to_i) * -1) )
-          sleep 40
+          # spend = api.spend(holder.get_eth_address, ( (should_have.to_i - api_data['success'].to_i) * -1) )
+          # sleep 40
         end
       end
     end
@@ -169,12 +169,12 @@ namespace :bidapp do
       puts "     -- actually has " + api_data['success']
       if (should_have.to_i - api_data['success'].to_i) > 0 
         puts "  should mint " + (should_have.to_i - api_data['success'].to_i).to_s
-        mint = api.mint(holder.get_eth_address, (should_have.to_i - api_data['success'].to_i))
-        sleep 40
+        # mint = api.mint(holder.get_eth_address, (should_have.to_i - api_data['success'].to_i))
+        # sleep 40
       elsif (should_have.to_i - api_data['success'].to_i) < 0
         puts "  should spend " + ((should_have.to_i - api_data['success'].to_i) * -1).to_s
-        spend = api.spend(holder.get_eth_address, ( (should_have.to_i - api_data['success'].to_i) * -1) )
-        sleep 40
+        # spend = api.spend(holder.get_eth_address, ( (should_have.to_i - api_data['success'].to_i) * -1) )
+        # sleep 40
       end      
       puts " "
     end

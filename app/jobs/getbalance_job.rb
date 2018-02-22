@@ -5,8 +5,8 @@ class GetbalanceJob < ApplicationJob
     api = BidappApi.new
     oldbalance = user.latest_balance
     begin
-      api_data = api.api_post('/account_balance', {account: user.accounts.primary.first})
-      user.latest_balance = api_data.to_i
+      api_data = api.get_balance(user.get_eth_address)
+      user.latest_balance = api_data['success'].to_i
     rescue
       
     end

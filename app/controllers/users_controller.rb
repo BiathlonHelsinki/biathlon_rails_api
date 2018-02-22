@@ -13,16 +13,6 @@ class UsersController < ApplicationController
 
   def get_balance
     @user = User.friendly.find(params[:id])
-    # balance = 0
-    # api = BidappApi.new
-    # @user.accounts.each do |account|
-    #   begin
-    #     api_data = api.api_post('/account_balance', {account: account.address})
-    #     balance += api_data.to_i
-    #   rescue
-    #     next
-    #   end
-    # end
     GetbalanceJob.perform_later @user
     render json: {data: @user.latest_balance}, status: 200
   end
