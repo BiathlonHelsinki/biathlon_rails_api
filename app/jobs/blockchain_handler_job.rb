@@ -1,9 +1,9 @@
 class BlockchainHandlerJob < ApplicationJob
   queue_as :default
   
-  include ActiveJob::Retry.new(strategy: :constant,
-                               limit: 5,
-                               delay: 5.minutes)
+  # include ActiveJob::Retry.new(strategy: :constant,
+  #                              limit: 5,
+  #                              delay: 5.minutes)
 
 
   def perform(blockchaintransaction)

@@ -80,9 +80,6 @@ GEM
     activejob (5.0.1)
       activesupport (= 5.0.1)
       globalid (>= 0.3.6)
-    activejob-retry (0.6.3)
-      activejob (>= 4.2)
-      activesupport (>= 4.2)
     activemodel (5.0.1)
       activesupport (= 5.0.1)
     activerecord (5.0.1)
@@ -327,7 +324,6 @@ PLATFORMS
 
 DEPENDENCIES
   active_hash_relation
-  activejob-retry
   audited!
   awesome_nested_set
   better_errors
