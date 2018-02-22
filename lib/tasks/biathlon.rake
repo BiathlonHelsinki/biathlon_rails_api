@@ -109,9 +109,9 @@ namespace :bidapp do
 
       if a.changed?
         a.save
-        next if a.user.nil?
-        a.user.latest_balance = a.balance
-        a.user.save!
+        next if a.holder.nil?
+        a.holder.latest_balance = a.balance
+        a.holder.save!
       end
     end
     
@@ -122,9 +122,9 @@ namespace :bidapp do
       acc.balance = api_data.to_i rescue 0
       if acc.changed?
         acc.save
-        next if acc.user.nil?
-        acc.user.latest_balance = acc.balance
-        acc.user.save!
+        next if acc.holder.nil?
+        acc.holder.latest_balance = acc.balance
+        acc.holder.save!
       end      
     end
   end
