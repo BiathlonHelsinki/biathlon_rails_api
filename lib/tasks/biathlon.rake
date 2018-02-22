@@ -119,7 +119,7 @@ namespace :bidapp do
     api = BidappApi.new
     externals = Account.external.each do |acc|
       api_data = api.get_balance(acc.address)
-      acc.balance = api_data.to_i rescue 0
+      acc.balance = api_data['success'].to_i rescue 0
       if acc.changed?
         acc.save
         next if acc.holder.nil?
