@@ -118,7 +118,7 @@ namespace :bidapp do
     # check external accounts
     api = BidappApi.new
     externals = Account.external.each do |acc|
-      api_data = api.get('/account_balance', {account: acc.address})
+      api_data = api.get_balance(acc.address)
       acc.balance = api_data.to_i rescue 0
       if acc.changed?
         acc.save
