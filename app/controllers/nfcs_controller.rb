@@ -108,7 +108,7 @@ class NfcsController < ApplicationController
       render json: {error: 'no security code on tag!'}, status: 401
     elsif '0x' + params[:node_address] == Setting.first.options["contract_address"]
       a = Account.find_by(address: '0x' + params[:user_address]);
-      @user = a.user
+      @user = a.holder
       nfc = Nfc.find_by(user: @user, tag_address: params[:tag_address], security_code: params[:securekey])
       if nfc
         render json: {data: nfc.user}, status: 200
