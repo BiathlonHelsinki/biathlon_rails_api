@@ -73,7 +73,7 @@ class UsersController < ApplicationController
     if existing.nil?
       # logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.inspect)
       begin
-        n = Nfc.new(tag_address: params[:tag_address], security_code: params[:securekey], active: true)
+        n = Nfc.new(tag_address: params[:tag_address], security_code: params[:securekey], active: true, keyholder: true)
         @user.nfcs << n
         n.save
         # Activity.create(user: @user, item: n, addition: 0, description: 'linked')
