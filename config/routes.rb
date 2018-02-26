@@ -98,7 +98,7 @@ Rails.application.routes.draw do
 
   resources :nfcs do
     collection do
-
+      get :all_keys
       get :unattached_users
       post :verify_tag
     end

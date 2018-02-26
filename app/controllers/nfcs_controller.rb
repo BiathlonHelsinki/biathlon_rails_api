@@ -1,8 +1,13 @@
 class NfcsController < ApplicationController
 
   skip_before_action :authenticate_user!, raise: false
-  before_action :authenticate_hardware!, only: [:unattached_users, :auth_door, :erase_tag]
+  before_action :authenticate_hardware!, only: [:unattached_users, :all_keys, :auth_door, :erase_tag]
 
+
+  def all_keys
+    @nfcs = Nfc.where(keyholder: true)
+    render json: NfcSerializer.new(@nfcs).serialized_json  
+  end
 
   def auth_closet
     if params[:securekey] == '00000000'

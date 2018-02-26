@@ -109,7 +109,9 @@ class Instance < ApplicationRecord
             else
               newitemrecipient = proposal
             end
-            newpledge = Pledge.create(item: newitemrecipient, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
+            #  instead of creating new pledge, restore points to user
+            pledge.user.update_column(:latest_balance, pledge.user.latest_balance + (pledge.pledge - counter))
+            # newpledge = Pledge.create(item: newitemrecipient, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
             pledge.update_column(:pledge, counter)
           end
           pledge.update_attribute(:spent_at, Time.current.utc)

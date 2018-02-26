@@ -27,7 +27,8 @@ class User < ActiveRecord::Base
   before_save :update_avatar_attributes
   # validates_presence_of :geth_pwd
   has_and_belongs_to_many :events  
-
+  has_many :members, dependent: :destroy
+  has_many :groups, through: :members, source: :source, source_type: 'Group'
 
   def charge_vat?
     false
