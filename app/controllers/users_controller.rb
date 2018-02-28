@@ -57,11 +57,11 @@ class UsersController < ApplicationController
 
   def check_pin
     @user = User.friendly.find(params[:id])
-    # if @user.pin == Digest::MD5.hexdigest(params[:pin])
+    if @user.pin == Digest::MD5.hexdigest(params[:pin])
       render json: UserSerializer.new(@user).serialized_json
-    # else
-      # render json: {error: 'Incorrect PIN'}, status: 403
-    # end
+    else
+      render json: {error: 'Incorrect PIN'}, status: 403
+    end
   end
 
   def link_to_nfc
