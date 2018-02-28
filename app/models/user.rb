@@ -136,15 +136,18 @@ class User < ActiveRecord::Base
         return false
       end
     end
-      
-      if error.nil?
+
+
+      # if errors.nil?
         # account is created in theory, so now let's do the transaction
         # no longer logging blockchain on the fly, but queing to process later
         # api = BidappApi.new
 
+        address = self.get_eth_address
+        logger.warn "got here, address should be " + address
         begin
           # 1. make activity first with blank transaction
-          b = BlockchainTransaction.new( value: points, account: self.get_eth_address, transaction_type: TransactionType.find_by(name: 'Create'))
+          b = BlockchainTransaction.new( value: points, account: Account.find_by(address: address), transaction_type: TransactionType.find_by(name: 'Create'))
           a = Activity.create(user: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
           
           # 2. make instance_user
@@ -203,7 +206,10 @@ class User < ActiveRecord::Base
       #
       #   self.errors.add(:base, error.inspect)
       #   return false
-      end
+      # else 
+      #   logger.warn errors.inspect
+      #   return errors
+      # end
 
     end
   end

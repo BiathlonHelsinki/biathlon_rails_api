@@ -68,6 +68,7 @@ class InstancesController < ApplicationController
     transaction = @user.award_points(event, event.cost_bb, visit_date.to_s)
 
     if transaction
+      logger.warn "trans is " + transaction.inspect
       if transaction["status"] == 'error'
         render json: {error: {message: transaction["message"]}}, status: :unprocessable_entity
       elsif transaction["error"]
