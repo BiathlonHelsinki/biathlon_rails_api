@@ -105,14 +105,11 @@ namespace :bidapp do
     mainfeed = get_feed
     mainfeed['data']['accounts'].each do |acc|
       a = Account.where("external is not true").find_or_create_by(address: acc.first)
-      a.balance = acc.last['biathlon'].to_i rescue 0
+      a.update_column(:balance, acc.last['biathlon'].to_i) rescue 0
 
-      if a.changed?
-        a.save
-        next if a.holder.nil?
-        a.holder.update_column(:latest_balance, a.balance)
-        a.holder.save!
-      end
+      next if a.holder.nil?
+      a.holder.update_column(:latest_balance, a.balance) unless a.balance == a.holder.latest_balance
+
     end
     
     # check external accounts
