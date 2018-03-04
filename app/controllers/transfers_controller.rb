@@ -5,7 +5,8 @@ class TransfersController < ApplicationController
   
   def send_biathlon
     recipient = User.friendly.find(params[:user_id])
-    sender = current_user
+    sender = params[:from_account]
+
     # check if recipient has ethereum account yet
     if recipient.accounts.empty?
       create_call = HTTParty.post(Figaro.env.dapp_address + '/create_account',
@@ -23,7 +24,9 @@ class TransfersController < ApplicationController
     begin
       # if sender.accounts.primary.first.external == true
 
-       b = BlockchainTransaction.new(value: params[:points], account: sender.accounts.first, recipient: recipient.accounts.first,  transaction_type: TransactionType.find_by(name: 'Transfer'))
+       b = BlockchainTransaction.new(value: params[:points], 
+          account: Account.find_by(address: sender), recipient: recipient.accounts.first,  
+          transaction_type: TransactionType.find_by(name: 'Transfer'))
         # transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points])
       # else
         # transaction = api.transfer(sender.accounts.first.address, recipient.accounts.first.address, params[:points])
@@ -40,17 +43,19 @@ class TransfersController < ApplicationController
         #   break if !et.nil?
         # end
 
-        a = Activity.create(user: recipient, item: current_user,
-          ethtransaction: nil, addition: 0, txaddress: nil,
-          description: "received_from", extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})", blockchain_transaction: b, extra: params[:userphoto_id].blank? ? nil :  userphoto 
-          )
+        a = Activity.create(user: recipient, item: current_user, 
+                            contributor: Account.find_by(address: sender).holder,
+                            ethtransaction: nil, addition: 0, txaddress: nil,
+                            description: "received_from", 
+                            extra_info: params[:reason].blank? ? nil : " (reason: #{params[:reason]})",
+                            blockchain_transaction: b, extra: params[:userphoto_id].blank? ? nil :  userphoto 
+                            )
         if b.save
           BlockchainHandlerJob.perform_later b
         end  
-        sender.latest_balance = sender.latest_balance - params[:points].to_i
-        recipient.latest_balance = recipient.latest_balance + params[:points].to_i
-        sender.save
-        recipient.save
+        Account.find_by(address: sender).holder.update_column(:latest_balance, Account.find_by(address: sender).holder.latest_balance - params[:points].to_i)
+        recipient.update_column(:latest_balance, recipient.latest_balance + params[:points].to_i)
+
         if userphoto
           userphoto.karma += params[:points].to_i
           userphoto.save
