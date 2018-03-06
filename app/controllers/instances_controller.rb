@@ -27,7 +27,7 @@ class InstancesController < ApplicationController
     if @onetimer.save
       Activity.create(user_id: 0, item: event,                   
                   description: 'attended_anonymously', onetimer: @onetimer, addition: 0 )
-      render json: @onetimer, status: 200
+      render json: OnetimerSerializer.new(@onetimer).serialized_json, status: 200
     else
       render json: @onetimer.errors, status: :unprocessable_entity
     end

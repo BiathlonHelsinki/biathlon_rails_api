@@ -1,6 +1,6 @@
 class OnetimerSerializer 
   include FastJsonapi::ObjectSerializer
-  attributes :code
+  attributes :code, :instance_name
 
   
   def created_at
