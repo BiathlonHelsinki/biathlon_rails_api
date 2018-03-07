@@ -43,7 +43,7 @@ class TransfersController < ApplicationController
         #   break if !et.nil?
         # end
 
-        a = Activity.create(user: recipient, item: current_user, 
+        a = Activity.create(user: current_user, item: recipient,  
                             contributor: Account.find_by(address: sender).holder,
                             ethtransaction: nil, addition: 0, txaddress: nil,
                             description: "received_from", 
