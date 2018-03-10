@@ -5,7 +5,7 @@ class Instance < ApplicationRecord
   accepts_nested_attributes_for :translations, :reject_if => proc {|x| x['name'].blank? && x['description'].blank? }
   accepts_nested_attributes_for :event
   extend FriendlyId
-  friendly_id :name_en , :use => [ :slugged, :finders , :history]
+  friendly_id :name , :use => [ :slugged, :finders , :history]
   mount_uploader :image, ImageUploader
   validates_presence_of :place_id, :start_at, :end_at, :custom_bb_fee,  :cost_bb, :room_needed, :price_public, :price_stakeholders
   # validates_uniqueness_of :sequence
@@ -203,11 +203,15 @@ class Instance < ApplicationRecord
     changed?
   end
   
-  def name_en
-    self.name(:en).blank? ? experiment.name(:en) : self.name(:en)
-  end
+  # def name_en
+  #   self.nil? ? event.name(:en) :
+  #    (self.name.blank? ?
+  #     (self.event.nil? ? self.name(:fi) : 
+  #     self.name ) : 'Needs English name' )
+  # end
   
   def name_present_in_at_least_one_locale
+    
     if I18n.available_locales.map { |locale| translation_for(locale).name }.compact.empty?
       errors.add(:base, "You must specify an event name in at least one available language.")
     end

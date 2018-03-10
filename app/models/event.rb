@@ -63,10 +63,11 @@ class Event < ApplicationRecord
   end
   
   def name_en
-    self.name(:en)
+    self.name
   end
   
   def name_present_in_at_least_one_locale
+    logger.warn 'name is ' + self.translations.inspect
     if I18n.available_locales.map { |locale| translation_for(locale).name }.compact.empty?
       errors.add(:base, "You must specify an event name in at least one available language.")
     end
