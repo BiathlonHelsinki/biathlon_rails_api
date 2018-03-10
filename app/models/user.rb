@@ -21,6 +21,7 @@ class User < ActiveRecord::Base
   # has_and_belongs_to_many :events
   # has_many :activities, as: :item
   has_many :instances_users
+  has_many :ideas, as: :proposer
   has_many :instances, through: :instances_users
   scope :untagged, -> () { includes(:nfcs).where( nfcs: {user_id: nil}) }
   mount_uploader :avatar, ImageUploader
