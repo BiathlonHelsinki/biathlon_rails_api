@@ -4,7 +4,11 @@ class TransfersController < ApplicationController
   before_action :authenticate_user!
   
   def send_biathlon
-    recipient = User.friendly.find(params[:user_id])
+    if params[:user_id]
+      recipient = User.friendly.find(params[:user_id])
+    elsif params[:group_id]
+      recipient = Group.friendly.find(params[:group_id])
+    end
     sender = params[:from_account]
 
     # check if recipient has ethereum account yet
