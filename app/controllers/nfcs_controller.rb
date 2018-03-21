@@ -116,7 +116,8 @@ class NfcsController < ApplicationController
       @user = a.holder
       nfc = Nfc.find_by(user: @user, tag_address: params[:tag_address], security_code: params[:securekey])
       if nfc
-        render json: {data: nfc.user}, status: 200
+        render json: UserSerializer.new(@user).serialized_json, status: 200
+        
       else
         render json: {error: 'No user found with this tag!'}, status: 401
       end

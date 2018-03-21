@@ -215,6 +215,10 @@ class User < ActiveRecord::Base
     end
   end
   
+   def is_stakeholder?
+    !stakes.paid.empty? || !groups.map(&:stakes).flatten.delete_if{|x| x.paid != true}.empty?
+  end
+
   def is_member?
     !stakes.where(includes_share: true).empty? && accepted_agreement == true
   end
