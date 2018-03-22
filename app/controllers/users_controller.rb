@@ -66,6 +66,7 @@ class UsersController < ApplicationController
 
   def link_to_nfc
     @user = User.friendly.find(params[:id])
+    keyholder = @user.is_stakeholder? ? (@user.nfcs.where(keyholder: true).empty? ? true : false ) : false
     # check for existing NFC
     existing = Nfc.find_by(tag_address: params[:tag_address])
     # logger.warn('looking for ' + params[:tag_address])
@@ -73,7 +74,7 @@ class UsersController < ApplicationController
     if existing.nil?
       # logger.warn('linking nfc tag with id ' + params[:tag_address] + ' and security code ' + params[:securekey] + ' to user ' + @user.inspect)
       begin
-        n = Nfc.new(tag_address: params[:tag_address], security_code: params[:securekey], active: true, keyholder: true)
+        n = Nfc.new(tag_address: params[:tag_address], security_code: params[:securekey], active: true, keyholder: keyholder)
         @user.nfcs << n
         n.save
         Activity.create(user: @user, item: n, addition: 0, description: 'linked')
