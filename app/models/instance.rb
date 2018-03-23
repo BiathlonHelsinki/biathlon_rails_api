@@ -110,7 +110,7 @@ class Instance < ApplicationRecord
               newitemrecipient = proposal
             end
             #  instead of creating new pledge, restore points to user
-            pledge.user.update_column(:latest_balance, pledge.user.latest_balance + (pledge.pledge - counter))
+            pledge.pledger.update_column(:latest_balance, pledge.pledger.latest_balance + (pledge.pledge - counter))
             # newpledge = Pledge.create(item: newitemrecipient, user: pledge.user, pledge: pledge.pledge - counter, converted: 0, comment: pledge.comment, extra_info: 'remaining from previous pledge after ' + counter.to_s + ENV['currency_symbol'] + ' was spent on scheduling' )
             pledge.update_column(:pledge, counter)
           end
@@ -121,8 +121,8 @@ class Instance < ApplicationRecord
           counter -= spent
           begin
               # make the activity first
-            b = BlockchainTransaction.new(value: spent, account: pledge.user.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
-            a = Activity.create(user: pledge.user, item: pledge_object, ethtransaction_id: nil, 
+            b = BlockchainTransaction.new(value: spent, account: pledge.pledger.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
+            a = Activity.create(user: pledge.user, contributor: pledge.pledger, item: pledge_object, ethtransaction_id: nil, 
               description: "spent_a_pledge_on",  numerical_value: spent, 
               extra_info: 'which_was_scheduled_as',  addition: -1, txaddress: nil, blockchain_transaction: b)
               
