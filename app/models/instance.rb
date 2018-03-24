@@ -60,6 +60,10 @@ class Instance < ApplicationRecord
 
   end
   
+  def event_image
+    !image? ? event.image : image
+  end
+
   def children
     []
   end
