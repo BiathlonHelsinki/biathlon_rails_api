@@ -7,8 +7,10 @@ class EventsController < ApplicationController
 
   def create
     @event = Event.new(event_params)
+    next_sequence = @event.next_sequence
     if @event.save
       @event.instances.each do |i|
+        i.update_column(:sequence, next_sequence)
         i.update_attribute(:published, true)
         i.spend_from_blockchain
       end

@@ -34,6 +34,11 @@ class Event < ApplicationRecord
       idea.save
     end
   end
+
+  def next_sequence
+    instances.map(&:sequence).map(&:to_i).sort.last + 1
+  end
+  
   
   def at_least_one_instance
     if instances.empty?
