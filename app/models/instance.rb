@@ -73,7 +73,7 @@ class Instance < ApplicationRecord
   end
   
   def responsible_people
-    [event.primary_sponsor, event.secondary_sponsor, organisers].compact.uniq
+    [event.primary_sponsor_type == 'Group' ? event.primary_sponsor.privileged : event.primary_sponsor, organisers].flatten.compact.uniq
   end
   
   def checked_in_so_far
