@@ -18,6 +18,7 @@ class StakesController < ApplicationController
                             description: 'received_stake_points', 
                             blockchain_transaction: b)
         if b.save
+          @stake.update_column(:blockchain_transaction_id, b.id)
          BlockchainHandlerJob.perform_later b
           render json: {"status" => "success"}.to_json
         else

@@ -125,17 +125,20 @@ class Instance < ApplicationRecord
           counter -= spent
           begin
               # make the activity first
-            b = BlockchainTransaction.new(value: spent, account: pledge.pledger.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
-            a = Activity.create(user: pledge.user, contributor: pledge.pledger, item: pledge_object, ethtransaction_id: nil, 
-              description: "spent_a_pledge_on",  numerical_value: spent, 
-              extra_info: 'which_was_scheduled_as',  addition: -1, txaddress: nil, blockchain_transaction: b)
-              
+            if pledge.blockchaintransaction_id.nil?
+              b = BlockchainTransaction.new(value: spent, account: pledge.pledger.accounts.primary.first, transaction_type: TransactionType.find_by(name: 'Spend'))
+              a = Activity.create(user: pledge.user, contributor: pledge.pledger, item: pledge_object, ethtransaction_id: nil, 
+                description: "spent_a_pledge_on",  numerical_value: spent, 
+                extra_info: 'which_was_scheduled_as',  addition: -1, txaddress: nil, blockchain_transaction: b)
+                          
 
-            if b.save
-              BlockchainHandlerJob.perform_later b
-              # a.save
-              activity_cache.push(a)
+              if b.save
+                pledge.update_column(:blockchaintransaction_id, b.id)
+                BlockchainHandlerJob.perform_later b
+                # a.save
+                activity_cache.push(a)
 
+              end
             end
           rescue Exception => e
             # don't write anything unless it goes to blockchain
