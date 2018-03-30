@@ -10,7 +10,8 @@ class BlockchainHandlerJob < ApplicationJob
     if !blockchaintransaction.confirmed_at.nil?
       return true
     elsif blockchaintransaction.submitted_at.nil?
-      api = BidappApi.new
+      api = BidappApi.
+      blockchaintransaction.update_column(:submitted_at, Time.current)
       if blockchaintransaction.transaction_type_id == 1
         transaction = api.mint(blockchaintransaction.account.address, blockchaintransaction.value)
       elsif blockchaintransaction.transaction_type_id == 2
@@ -22,7 +23,7 @@ class BlockchainHandlerJob < ApplicationJob
       if transaction
         if transaction['status'] != 'error'
           blockchaintransaction.update_column(:submitted_at, Time.current)
-          logger.error(transaction.inspect)
+          # logger.error(transaction.inspect)
           et = Ethtransaction.find_by(txaddress: transaction['success'])
           blockchaintransaction.ethtransaction = et
           blockchaintransaction.activity.ethtransaction = et
@@ -36,7 +37,8 @@ class BlockchainHandlerJob < ApplicationJob
             end
           end
         else
-          logger.error('error on Dapp')
+          logger.error('error on Dapp' + transaction.inspect)
+          blockchaintransaction.update_column(:submitted_at, nil)
           raise "DappException"
         end
       end

@@ -50,6 +50,18 @@ class Group < ApplicationRecord
     end
   end
 
+  def is_stakeholder?
+    if is_member && !taxid.blank?
+      return !stakes.paid.empty?
+    else
+      if taxid.blank?
+        return !stakes.paid.empty?
+      else
+        return false
+      end
+    end
+  end
+  
   def copy_password
     geth_pwd = SecureRandom.hex(13)
   end
