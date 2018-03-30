@@ -21,7 +21,8 @@ class BlockchainHandlerJob < ApplicationJob
       sleep 3
       if transaction
         if transaction['status'] != 'error'
-          logger.warn(transaction.inspect)
+          blockchaintransaction.update_column(:submitted_at, Time.current)
+          logger.error(transaction.inspect)
           et = Ethtransaction.find_by(txaddress: transaction['success'])
           blockchaintransaction.ethtransaction = et
           blockchaintransaction.activity.ethtransaction = et
@@ -35,6 +36,7 @@ class BlockchainHandlerJob < ApplicationJob
             end
           end
         else
+          logger.error('error on Dapp')
           raise "DappException"
         end
       end
