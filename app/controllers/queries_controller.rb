@@ -1,6 +1,6 @@
 class QueriesController < ApplicationController
 
-  skip_before_filter :authenticate_user!, raise: false
+  skip_before_action :authenticate_user!, raise: false
 
   def contract_address
     # get from DB, that is better

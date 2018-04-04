@@ -1,6 +1,6 @@
 class AuthenticationsController < ApplicationController
   before_action :authenticate_user!, raise: false
-  skip_before_filter :authenticate_user!, only: [:index, :show, :create]
+  skip_before_action :authenticate_user!, only: [:index, :show, :create]
   
   def add_provider
     if params[:user_email] != current_user.email
