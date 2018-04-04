@@ -20,7 +20,17 @@ class Group < ApplicationRecord
   after_update :edit_to_activity_feed
   before_save :validate_vat
   has_many :activities, as: :contributor
+  has_many :own_activities, as: :contributor, class_name: 'Activity'
   rolify
+
+  def all_activities
+    [activities, Activity.where(item: self)].flatten.compact.uniq    
+  end
+  
+  def self_activities_kp
+    [activities.kuusi_palaa, Activity.kuusi_palaa.where(item: self)].flatten.compact.uniq    
+  end
+
   
   def validate_vat
     unless taxid.blank?

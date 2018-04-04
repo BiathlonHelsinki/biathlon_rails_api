@@ -204,8 +204,10 @@ namespace :bidapp do
   desc 'audit user accounts on blockchain'
   task audit_users: :environment  do
     api = BidappApi.new
-    User.all.order(:id).each do |user|
-      next if user.id == 1
+    Account.all.each do |account|
+      user = account.holder
+      next if account.holder.nil?
+      next if account.external == true
       unless user.all_activities.empty?
         total = 0
         plus = user.own_activities.kuusi_palaa.select{|x| x.addition == 1}.sum{|x| x.value.to_i}         
@@ -222,44 +224,40 @@ namespace :bidapp do
             # too many, let's delete some
             p '  -- will delete ' + (user.latest_balance - total).to_s + ' from blockchain balance'
             begin
-              transaction = api.spend(user.get_eth_address, user.latest_balance - total)
-              if transaction['data']
-                et = nil
-                sleep 15
-                while et.nil? do
-                  et = Ethtransaction.find_by(txaddress: transaction['data'])
-                end
-                a = Activity.create(user: user, contributor: user, item_type: 'Post', item_id: 36, ethtransaction_id: et.id, 
-                description: "had_their_blockchain_balance_adjusted_by", numerical_value: "-" + user.latest_balance - total, 
-                addition: 0, txaddress: transaction['data'])
-              elsif transaction['error']
-                return transaction['error']
+              b = BlockchainTransaction.new( value:  user.latest_balance - total, account: account, transaction_type: TransactionType.find_by(name: 'Spend'))
+              a = Activity.create(user: user.class == Group ? user.members.first.user : user, contributor: user, item_type: 'Post', item_id: 36, ethtransaction_id: nil, 
+                description: "had_their_blockchain_balance_adjusted_by", numerical_value: "-" + (user.latest_balance - total).to_s, 
+                  addition: 0, blockchain_transaction: b)
+              if b.save
+                BlockchainHandlerJob.perform_later b              
+                puts 'submitted blockchain job'
+                sleep 4
+                              
+              else
+                puts "error"
               end
             rescue Exception => e
               # don't write anything unless it goes to blockchain
-              logger.warn('spending error' + e.inspect)  
-              return transaction
+              puts 'spending error' + e.inspect
             end  
           elsif user.latest_balance < total
             p '  -- will add ' + (total - user.latest_balance).to_s + ' from blockchain balance'
             begin
-              transaction = api.mint(user.accounts.first.address, total - user.latest_balance)
-              if transaction['data']
-                et = nil
-                sleep 2
-                while et.nil? do
-                  et = Ethtransaction.find_by(txaddress: transaction['data'])
-                end
-                a = Activity.create(user: user, item_type: 'Post', item_id: 36, ethtransaction_id: et.id, 
-                description: "had_their_blockchain_balance_adjusted_by", numerical_value: total - user.latest_balance, 
-                addition: 0, txaddress: transaction['data'])
-              elsif transaction['error']
-                return transaction['error']
+              b = BlockchainTransaction.new( value:  user.latest_balance - total, account: account, transaction_type: TransactionType.find_by(name: 'Create'))
+              a = Activity.create(user: user.class == Group ? user.members.first.user : user, contributor: user, item_type: 'Post', item_id: 36, ethtransaction_id: nil, 
+                description: "had_their_blockchain_balance_adjusted_by", numerical_value: (user.latest_balance - total).to_s, 
+                  addition: 0, blockchain_transaction: b)
+              if b.save
+                BlockchainHandlerJob.perform_later b              
+                puts 'submitted blockchain job'
+                sleep 4
+                              
+              else
+                puts "error"
               end
-            rescue Exception => e
+             rescue Exception => e
               # don't write anything unless it goes to blockchain
-              P 'spending error' + e.inspect
-              return transaction
+              puts 'minting error' + e.inspect
             end  
           end
         end
