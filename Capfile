@@ -8,9 +8,11 @@ require "capistrano/rvm"
 require 'capistrano/bundler'
 require 'capistrano/rails/migrations'
 require 'capistrano/puma'
+install_plugin Capistrano::Puma
 require "capistrano/scm/git"
-require 'capistrano/delayed_job'
 install_plugin Capistrano::SCM::Git
+require 'capistrano/delayed_job'
+
 
 # Include tasks from other gems included in your Gemfile
 #
