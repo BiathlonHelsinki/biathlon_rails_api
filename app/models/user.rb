@@ -15,6 +15,7 @@ class User < ActiveRecord::Base
   extend FriendlyId
   friendly_id :username , :use => [ :slugged, :finders, :history]
   has_many :activities
+  has_many :own_activities, as: :contributor, class_name: 'Activity'
   has_many :onetimers
   has_many :nfcs
   has_many :stakes, dependent: :destroy, as: :owner
@@ -99,6 +100,11 @@ class User < ActiveRecord::Base
     [activities, Activity.where(item: self)].flatten.compact.uniq    
   end
   
+  def self_activities_kp
+    [activities.kuusi_palaa, Activity.kuusi_palaa.where(item: self)].flatten.compact.uniq    
+  end
+
+
   def available_balance
     latest_balance - pending_pledges.sum(&:pledge)      
   end
@@ -149,7 +155,7 @@ class User < ActiveRecord::Base
         begin
           # 1. make activity first with blank transaction
           b = BlockchainTransaction.new( value: points, account: Account.find_by(address: address), transaction_type: TransactionType.find_by(name: 'Create'))
-          a = Activity.create(user: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
+          a = Activity.create(user: self, contributor: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
           
           # 2. make instance_user
           instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)

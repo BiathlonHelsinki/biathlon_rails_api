@@ -9,7 +9,7 @@ class Activity < ApplicationRecord
   has_one :instances_user
   belongs_to :blockchain_transaction, autosave: true, optional: true
   validates_presence_of :item_id, :item_type
-  
+  scope :kuusi_palaa, ->() { where("created_at >= '2018-01-01'") }
   scope :by_user, ->(user_id) { where(user_id: user_id) }
   
   def linked_name

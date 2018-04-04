@@ -1,9 +1,9 @@
 source 'https://rubygems.org'
 
-ruby '2.3.3'
+ruby '2.5.1'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
-gem 'rails', '~> 5.0.1'
+gem 'rails', '5.1.6'
 # Use sqlite3 as the database for Active Record
 gem 'pg'
 # Use Puma as the app server
@@ -27,13 +27,13 @@ group :development, :test do
   # Use RSpec for specs
   gem 'rspec-rails'
   # Use Factory Girl for generating random test data
-  gem 'factory_girl_rails'
+  gem 'factory_bot'
 end
 
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
-  gem 'listen', '~> 3.0.5'
+  gem 'listen'
   gem 'ruby_parser', '>= 3.0.1'
   # Spring speeds up development by keeping your application running in the background. Read more: https://github.com/rails/spring
   gem 'spring'
@@ -71,9 +71,9 @@ gem 'net-ping'
 gem 'omniauth'
 gem 'omniauth-facebook'
 gem 'omniauth-twitter'
-gem "paranoia", github: "rubysherpas/paranoia", branch: "rails5"
+gem "paranoia", "~> 2.2" # github: "rubysherpas/paranoia", branch: "rails5"
 gem "rails-observers", github: 'rails/rails-observers'
 gem 'rolify'
 gem 'simple_token_authentication', git: 'https://github.com/gonzalo-bulnes/simple_token_authentication.git', branch: 'master'
 gem 'textacular', github: 'textacular/textacular', branch: 'master'
-gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
+# gem 'tzinfo-data', platforms: [:mingw, :mswin, :x64_mingw, :jruby]
