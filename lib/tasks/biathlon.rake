@@ -243,9 +243,9 @@ namespace :bidapp do
           elsif user.latest_balance < total
             p '  -- will add ' + (total - user.latest_balance).to_s + ' from blockchain balance'
             begin
-              b = BlockchainTransaction.new( value:  user.latest_balance - total, account: account, transaction_type: TransactionType.find_by(name: 'Create'))
+              b = BlockchainTransaction.new( value:  total - user.latest_balance , account: account, transaction_type: TransactionType.find_by(name: 'Create'))
               a = Activity.create(user: user.class == Group ? user.members.first.user : user, contributor: user, item_type: 'Post', item_id: 36, ethtransaction_id: nil, 
-                description: "had_their_blockchain_balance_adjusted_by", numerical_value: (user.latest_balance - total).to_s, 
+                description: "had_their_blockchain_balance_adjusted_by", numerical_value: (total - user.latest_balance ).to_s, 
                   addition: 0, blockchain_transaction: b)
               if b.save
                 BlockchainHandlerJob.perform_later b              
