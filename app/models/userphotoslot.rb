@@ -1,8 +1,8 @@
 class Userphotoslot < ApplicationRecord
   belongs_to :user
-  belongs_to :userphoto
-  belongs_to :ethtransaction
-  belongs_to :activity
+  belongs_to :userphoto, optional: true
+  belongs_to :ethtransaction, optional: true
+  belongs_to :activity, optional: true
   
   
 end

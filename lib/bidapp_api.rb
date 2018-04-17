@@ -44,10 +44,10 @@ class BidappApi
     return response.body
   end
   
-  def mint(recipient, tokens)
+  def mint(recipient, tokens, blockchainid = nil)
     # logger = ActiveSupport::Logger.new(STDOUT)
     # logger.level = :info
-    response = HTTParty.post(API_URL + '/mint', body: {recipient: recipient, tokens: tokens}, timeout: 10 )
+    response = HTTParty.post(API_URL + '/mint', body: {recipient: recipient, tokens: tokens, blockchainid: blockchainid}, timeout: 10 )
     # logger.info('mint output is ' + response.body.inspect)
     json = JSON.parse(response.body)
     begin
@@ -61,8 +61,8 @@ class BidappApi
     end
   end
 
-  def spend(spender, tokens)
-    response = HTTParty.post(API_URL + '/spend', body: {sender: spender, tokens: tokens}, timeout: 12 )
+  def spend(spender, tokens, blockchainid = nil)
+    response = HTTParty.post(API_URL + '/spend', body: {sender: spender, tokens: tokens, blockchainid: blockchainid}, timeout: 12 )
     begin
       JSON.parse(response.body)
     rescue e
@@ -83,8 +83,8 @@ class BidappApi
     end
   end
   
-  def transfer(sender, recipient, tokens) 
-    response = HTTParty.post(API_URL + '/transfer_owner', body: {sender: sender, recipient: recipient, tokens: tokens }, timeout: 12 )
+  def transfer(sender, recipient, tokens, blockchainid = nil) 
+    response = HTTParty.post(API_URL + '/transfer', body: {sender: sender, recipient: recipient, tokens: tokens, blockchainid: blockchainid }, timeout: 12 )
     return JSON.parse(response.body)
   end  
 end

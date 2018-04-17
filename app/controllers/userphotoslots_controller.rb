@@ -14,7 +14,7 @@ class UserphotoslotsController < ApplicationController
           @userphotoslot = Userphotoslot.create(user: user )
         
           b = BlockchainTransaction.new(value: 1, account: user.accounts.first, transaction_type: TransactionType.find_by(name: 'Spend'))
-          a = Activity.create(user: user, item: @userphotoslot, ethtransaction: nil, addition: -1, txaddress: nil, description: "bought_a_photo_upload_slot", blockchain_transaction: b)
+          a = Activity.create(user: user, contributor: user, item: @userphotoslot, ethtransaction: nil, addition: -1, txaddress: nil, description: "bought_a_photo_upload_slot", blockchain_transaction: b)
 
           if b.save
             BlockchainHandlerJob.perform_later b

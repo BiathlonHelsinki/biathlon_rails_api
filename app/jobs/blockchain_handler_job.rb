@@ -13,11 +13,11 @@ class BlockchainHandlerJob < ApplicationJob
       api = BidappApi.new
       blockchaintransaction.update_column(:submitted_at, Time.current)
       if blockchaintransaction.transaction_type_id == 1
-        transaction = api.mint(blockchaintransaction.account.address, blockchaintransaction.value)
+        transaction = api.mint(blockchaintransaction.account.address, blockchaintransaction.value, blockchaintransaction.id)
       elsif blockchaintransaction.transaction_type_id == 2
-        transaction = api.spend(blockchaintransaction.account.address, blockchaintransaction.value)
+        transaction = api.spend(blockchaintransaction.account.address, blockchaintransaction.value, blockchaintransaction.id)
       elsif blockchaintransaction.transaction_type_id == 3
-        transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value)
+        transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value, blockchaintransaction.id)
       end
       sleep 3
       if transaction
