@@ -19,7 +19,7 @@ class BlockchainHandlerJob < ApplicationJob
       elsif blockchaintransaction.transaction_type_id == 3
         transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value, blockchaintransaction.id)
       end
-      sleep 3
+      sleep 8
       if transaction
         if transaction['status'] != 'error'
           blockchaintransaction.update_column(:submitted_at, Time.current)
