@@ -28,7 +28,7 @@ class User < ActiveRecord::Base
   mount_uploader :avatar, ImageUploader
   before_save :update_avatar_attributes
   # validates_presence_of :geth_pwd
-  has_and_belongs_to_many :events  
+  # has_and_belongs_to_many :events  
   has_many :members, dependent: :destroy
   has_many :groups, through: :members, source: :source, source_type: 'Group'
 
@@ -113,8 +113,8 @@ class User < ActiveRecord::Base
     api = BidappApi.new
     accounts.each do |account|
       begin
-        api_data = api.api_post('/account_balance', {account: account.address})
-        account.balance = api_data.to_i
+        api_data = api.get_balance(account.address)
+        account.balance = api_data.success.to_i
         account.save
       rescue
         next
