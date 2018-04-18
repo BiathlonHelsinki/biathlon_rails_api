@@ -76,6 +76,7 @@ namespace :bidapp do
     BlockchainTransaction.where(["ethtransaction_id is null and created_at < ?", 4.hours.ago]).each do |b|
       b.update_column(:submitted_at, nil)
       BlockchainHandlerJob.perform_later b
+      sleep 10
     end
   end
       
