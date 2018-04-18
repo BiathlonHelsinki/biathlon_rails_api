@@ -19,17 +19,16 @@ class BlockchainHandlerJob < ApplicationJob
       elsif blockchaintransaction.transaction_type_id == 3
         transaction = api.transfer(blockchaintransaction.account.address, blockchaintransaction.recipient.address, blockchaintransaction.value, blockchaintransaction.id)
       end
-      sleep 8
+      sleep 2
       if transaction
         if transaction['status'] != 'error'
           blockchaintransaction.update_column(:submitted_at, Time.current)
           # logger.error(transaction.inspect)
           et = Ethtransaction.find_by(txaddress: transaction['success'])
           blockchaintransaction.ethtransaction = et
-          blockchaintransaction.activity.ethtransaction = et
+          blockchaintransaction.activity.update_column(:ethtransaction_id, et.id)
           blockchaintransaction.submitted_at = Time.current
           blockchaintransaction.save
-          blockchaintransaction.activity.save
           if blockchaintransaction.activity.item_type == 'Stake'
             if blockchaintransaction.activity.item.ethtransaction.nil?
               blockchaintransaction.activity.item.ethtransaction = et
