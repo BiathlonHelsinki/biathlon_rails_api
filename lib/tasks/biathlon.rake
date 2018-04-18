@@ -73,7 +73,7 @@ namespace :bidapp do
   
   desc 'Grab missing blockchain transactions'
   task submit_missing: :environment do
-    BlockchainTransaction.where(ethtransaction: nil, submitted_at: nil).each do |b|
+    BlockchainTransaction.where(["ethtransaction_id is null and created_at < ?", 4.hours.ago]).each do |b|
       BlockchainHandlerJob.perform_later b
     end
   end
