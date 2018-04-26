@@ -113,17 +113,23 @@ class NfcsController < ApplicationController
       render json: {error: 'no security code on tag!'}, status: 401
     elsif '0x' + params[:node_address] == Setting.first.options["contract_address"]
       a = Account.find_by(address: '0x' + params[:user_address]);
-      @user = a.holder
-      nfc = Nfc.find_by(user: @user, tag_address: params[:tag_address], security_code: params[:securekey])
-      if nfc
-        render json: UserSerializer.new(@user).serialized_json, status: 200
-        
+      
+      if a
+        @user = a.holder 
+
+        nfc = Nfc.find_by(user: @user, tag_address: params[:tag_address], security_code: params[:securekey])
+        if nfc
+          render json: UserSerializer.new(@user).serialized_json, status: 200
+          
+        else
+          render json: {error: 'No user found with this tag!'}, status: 422
+        end
       else
-        render json: {error: 'No user found with this tag!'}, status: 401
+        render json: {error: 'No user matchies this etherum address'}, status: 422
       end
     else
       #  deal with other nodes later
-      render json: {error: 'Invalid Biathlon node!'}, status: 401
+      render json: {error: 'Invalid Biathlon node!'}, status: 422
     end
 
   end
