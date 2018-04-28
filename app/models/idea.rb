@@ -23,7 +23,7 @@ class Idea < ApplicationRecord
   friendly_id :name, use: [:slugged, :finders]
 
   mount_uploader :image, ImageUploader
-  before_save :update_image_attributes
+  # before_save :update_image_attributes
 
   scope :active, ->() { where(status: 'active')}
   scope :needing_to_be_published,  ->() { where(notified: :true).where(converted_id: nil)}

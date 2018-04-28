@@ -8,6 +8,10 @@ class EventsController < ApplicationController
   def create
     @event = Event.new(event_params)
     next_sequence = @event.next_sequence
+    if @event.idea_id
+      # logger.error 'trying to download ' + Idea.find(@event.idea_id).image.url
+      @event.remote_image_url = Idea.find(@event.idea_id).image.url
+    end
     if @event.save
       @event.instances.each do |i|
         i.update_column(:sequence, next_sequence)

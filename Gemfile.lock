@@ -1,19 +1,19 @@
 GIT
   remote: git://github.com/collectiveidea/audited.git
-  revision: 9f6619ca48d3f8e0809ca7d02451a95b7f530be3
+  revision: 0e7975426acf641edfefac5da7806d6faf767ebb
   branch: master
   specs:
     audited (4.7.0)
-      activerecord (>= 4.0, < 5.2)
+      activerecord (>= 4.2, < 5.3)
 
 GIT
   remote: git://github.com/globalize/globalize.git
-  revision: 55c9c7a6d94f5707c3ff72a318498c8c125287b1
+  revision: 8a193c1272c3640e516ef36ac78e5d634152d3a5
   branch: master
   specs:
     globalize (5.1.0)
-      activemodel (>= 4.2, < 5.2)
-      activerecord (>= 4.2, < 5.2)
+      activemodel (>= 4.2, < 5.3)
+      activerecord (>= 4.2, < 5.3)
       request_store (~> 1.0)
 
 GIT
@@ -25,11 +25,11 @@ GIT
 
 GIT
   remote: git://github.com/textacular/textacular.git
-  revision: 21ec56375b659fac3879b30abaf99651af5d74f2
+  revision: bf108fc39b0ed760d299e3b74bb7125ea68436b9
   branch: master
   specs:
     textacular (5.0.1)
-      activerecord (>= 5.0, < 5.3)
+      activerecord (>= 5.0, < 6.0)
 
 GIT
   remote: https://github.com/gonzalo-bulnes/simple_token_authentication.git
@@ -40,6 +40,14 @@ GIT
       actionmailer (>= 3.2.6, < 6)
       actionpack (>= 3.2.6, < 6)
       devise (>= 3.2, < 6)
+
+GIT
+  remote: https://github.com/lardawge/carrierwave_backgrounder.git
+  revision: 460394b0e2c0cf0c192be9c1a60bcf9dfb1f9e4d
+  specs:
+    carrierwave_backgrounder (0.4.2)
+      carrierwave (>= 0.5, < 2.0)
+      mime-types (~> 2.99)
 
 GEM
   remote: https://rubygems.org/
@@ -88,15 +96,15 @@ GEM
     arel (8.0.0)
     awesome_nested_set (3.1.4)
       activerecord (>= 4.0.0, < 5.3)
-    aws-partitions (1.76.0)
-    aws-sdk-core (3.18.1)
+    aws-partitions (1.77.0)
+    aws-sdk-core (3.19.0)
       aws-partitions (~> 1.0)
       aws-sigv4 (~> 1.0)
       jmespath (~> 1.0)
     aws-sdk-kms (1.5.0)
       aws-sdk-core (~> 3)
       aws-sigv4 (~> 1.0)
-    aws-sdk-s3 (1.8.2)
+    aws-sdk-s3 (1.9.0)
       aws-sdk-core (~> 3)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.0)
@@ -110,8 +118,8 @@ GEM
       debug_inspector (>= 0.0.1)
     builder (3.2.3)
     byebug (10.0.2)
-    cancancan (2.1.3)
-    capistrano (3.10.1)
+    cancancan (2.2.0)
+    capistrano (3.10.2)
       airbrussh (>= 1.0.0)
       i18n
       rake (>= 10.0.0)
@@ -141,13 +149,13 @@ GEM
       carrierwave (>= 0.7, < 2.0)
     coderay (1.1.2)
     concurrent-ruby (1.0.5)
-    crass (1.0.3)
+    crass (1.0.4)
     daemons (1.2.6)
     debug_inspector (0.0.3)
-    delayed_job (4.1.4)
-      activesupport (>= 3.0, < 5.2)
-    delayed_job_active_record (4.1.2)
-      activerecord (>= 3.0, < 5.2)
+    delayed_job (4.1.5)
+      activesupport (>= 3.0, < 5.3)
+    delayed_job_active_record (4.1.3)
+      activerecord (>= 3.0, < 5.3)
       delayed_job (>= 3.0, < 5)
     devise (4.4.3)
       bcrypt (~> 3.0)
@@ -174,9 +182,9 @@ GEM
     hashie (3.5.7)
     httparty (0.16.2)
       multi_xml (>= 0.5.2)
-    i18n (1.0.0)
+    i18n (1.0.1)
       concurrent-ruby (~> 1.0)
-    jmespath (1.3.1)
+    jmespath (1.4.0)
     jwt (1.5.6)
     listen (3.1.5)
       rb-fsevent (~> 0.9, >= 0.9.4)
@@ -189,9 +197,7 @@ GEM
       mini_mime (>= 0.1.1)
     method_source (0.9.0)
     migration_data (0.3.0)
-    mime-types (3.1)
-      mime-types-data (~> 3.2015)
-    mime-types-data (3.2016.0521)
+    mime-types (2.99.3)
     mini_magick (4.8.0)
     mini_mime (1.0.0)
     mini_portile2 (2.3.0)
@@ -216,7 +222,7 @@ GEM
     omniauth (1.8.1)
       hashie (>= 3.4.6, < 3.6.0)
       rack (>= 1.6.2, < 3)
-    omniauth-facebook (4.0.0)
+    omniauth-facebook (5.0.0)
       omniauth-oauth2 (~> 1.2)
     omniauth-oauth (1.1.0)
       oauth
@@ -228,11 +234,11 @@ GEM
       omniauth-oauth (~> 1.1)
       rack
     orm_adapter (0.5.0)
-    paranoia (2.4.0)
-      activerecord (>= 4.0, < 5.2)
+    paranoia (2.4.1)
+      activerecord (>= 4.0, < 5.3)
     pg (1.0.0)
-    puma (3.11.3)
-    rack (2.0.4)
+    puma (3.11.4)
+    rack (2.0.5)
     rack-test (1.0.0)
       rack (>= 1.0, < 3)
     rails (5.1.6)
@@ -288,7 +294,7 @@ GEM
     ruby_dep (1.5.0)
     ruby_parser (3.11.0)
       sexp_processor (~> 4.9)
-    sexp_processor (4.10.1)
+    sexp_processor (4.11.0)
     spring (2.0.2)
       activesupport (>= 4.2)
     spring-watcher-listen (2.0.1)
@@ -321,6 +327,9 @@ DEPENDENCIES
   active_hash_relation
   audited!
   awesome_nested_set
+  aws-partitions (= 1.77.0)
+  aws-sdk-core (= 3.19.0)
+  aws-sdk-s3 (= 1.9.0)
   better_errors
   binding_of_caller
   byebug
@@ -333,6 +342,7 @@ DEPENDENCIES
   capistrano3-puma
   carrierwave
   carrierwave-aws
+  carrierwave_backgrounder!
   daemons
   delayed_job_active_record
   devise

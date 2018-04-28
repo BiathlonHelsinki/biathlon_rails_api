@@ -51,10 +51,13 @@ gem 'active_hash_relation'
 # gem 'activemodel-serializers-xml'
 gem "audited", github: 'collectiveidea/audited', branch: :master
 gem 'awesome_nested_set'
+gem 'aws-partitions', '1.77.0'
+gem 'aws-sdk-core', '3.19.0'
+gem 'aws-sdk-s3', '1.9.0'
 gem 'cancancan'
 gem 'carrierwave'
 gem 'carrierwave-aws'
-
+gem 'carrierwave_backgrounder', :git => 'https://github.com/lardawge/carrierwave_backgrounder.git'
 gem "daemons"
 gem 'delayed_job_active_record'
 gem 'devise'
