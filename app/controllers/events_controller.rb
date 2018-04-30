@@ -10,7 +10,9 @@ class EventsController < ApplicationController
     next_sequence = @event.next_sequence
     if @event.idea_id
       # logger.error 'trying to download ' + Idea.find(@event.idea_id).image.url
-      @event.remote_image_url = Idea.find(@event.idea_id).image.url
+      if @event.idea.image?
+        @event.remote_image_url = Idea.find(@event.idea_id).image.url
+      end
     end
     if @event.save
       @event.instances.each do |i|
