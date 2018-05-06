@@ -16,7 +16,7 @@ class RoombookingsController < ApplicationController
 
         # NEW: Queue this shit for processing later
         b = BlockchainTransaction.new( value: params[:cost], account: @user.accounts.first, transaction_type: TransactionType.find_by(name: 'Spend'))
-        a =  Activity.new(user: @user, item: @roombooking,
+        a =  Activity.new(user: @user, contributor: @user, item: @roombooking,
                             addition: -1,  description: "booked_the_back_room_on",
                       extra_info: params[:purpose].blank? ? nil : " (for: #{params[:purpose]})", blockchain_transaction: b )
         
