@@ -77,7 +77,7 @@ class UsersController < ApplicationController
         n = Nfc.new(tag_address: params[:tag_address], security_code: params[:securekey], active: true, keyholder: keyholder)
         @user.nfcs << n
         n.save
-        Activity.create(user: @user, item: n, addition: 0, description: 'linked')
+        Activity.create(user: @user, contributor: @user, item: n, addition: 0, description: 'linked')
         render json: {data: @user}, status: 200
       rescue
         # logger.warn("error")
