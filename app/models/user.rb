@@ -144,79 +144,34 @@ class User < ActiveRecord::Base
       end
     end
 
+    address = self.get_eth_address
+    logger.warn "got here, address should be " + address
+    begin
+      # 1. make activity first with blank transaction
+      bcpoints =  instance.rsvps.pending.find_by(user: self).nil? ? points : (points + 2)
 
-      # if errors.nil?
-        # account is created in theory, so now let's do the transaction
-        # no longer logging blockchain on the fly, but queing to process later
-        # api = BidappApi.new
+      b = BlockchainTransaction.new( value: bcpoints, account: Account.find_by(address: address), transaction_type: TransactionType.find_by(name: 'Create'))
+      if instance.rsvps.pending.find_by(user: self).nil?
+        a = Activity.create(user: self, contributor: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
+      else
+        a = Activity.create(user: self, contributor: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended_with_rsvp', blockchain_transaction: b)
+      end      
+      
+      # 2. make instance_user
+      instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
+      
+      # 3. submit transaction, get hash
 
-        address = self.get_eth_address
-        logger.warn "got here, address should be " + address
-        begin
-          # 1. make activity first with blank transaction
-          b = BlockchainTransaction.new( value: points, account: Account.find_by(address: address), transaction_type: TransactionType.find_by(name: 'Create'))
-          a = Activity.create(user: self, contributor: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
-          
-          # 2. make instance_user
-          instances_users << InstancesUser.new(instance: instance, visit_date: visit_date, activity: a)
-          
-          # 3. submit transaction, get hash
+      # 3 NEW: submit to blockchain queue
+     
+      if b.save
+        BlockchainHandlerJob.perform_later b
 
-          # 3 NEW: submit to blockchain queue
-         
-          if b.save
-             BlockchainHandlerJob.perform_later b
-            return {"status" => "success"}
-          else
-            return {"error" => "error", "message" => b.errors.inspect}
-          end
-          # transaction = api.mint(self.accounts.first.address, points)
-          #
-          # if transaction['data']
-          #   logger.warn('address is ' + transaction['data'])
-          #   accounts.first.balance = accounts.first.balance.to_i + points
-          #   sleep 1
-          #   e = Ethtransaction.find_by(txaddress: transaction['data'])
-          #
-          #   # 4. add hash to activity
-          #   a.ethtransaction = e
-          #   a.txaddress = transaction['data']
-          #   if a.save
-          #     save
-          #     return transaction
-          #   else
-          #     # logger.warn('errors are ' + a.errors.inspect)
-          #     return false
-          #   end
-          #   # logger.warn('hmmmm ..... ' + transaction)
-          # elsif transaction['error']
-          #
-          #   logger.warn('message is ' + transaction[:message].to_s)
-          #   return transaction
-          # elsif transaction['status'] == 'error'
-          #   logger.warn('third error:' + transaction.inspect)
-          #   return transaction
-          #
-          # else
-          #   logger.warn('none of the above: ' + transaction.inspect)
-          # end
-      #
-      #   rescue Net::ReadTimeout
-      #     return {error: {message: 'There was a problem communicating with the Ethereum blockchain. Your check-in has been logged and will be resubmitted later. Enjoy the experiment!'}}
-      #   rescue Exception => e
-      #     # don't write anything unless it goes to blockchain
-      #     logger.warn('minting error: ' + e.inspect)
-      #     return transaction
-      #   end
-      # else
-      #   logger.warn('wtf')
-      #
-      #   self.errors.add(:base, error.inspect)
-      #   return false
-      # else 
-      #   logger.warn errors.inspect
-      #   return errors
-      # end
+        return {"status" => "success"}
+      else
+        return {"error" => "error", "message" => b.errors.inspect}
+      end
+
 
     end
   end

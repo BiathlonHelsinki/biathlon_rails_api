@@ -12,6 +12,7 @@ class Instance < ApplicationRecord
   belongs_to :proposal, optional: true
   belongs_to :idea
   has_many :pledges
+  has_many :rsvps
   has_many :instances_users
   has_many :instances_organisers
   has_many :users, through: :instances_users

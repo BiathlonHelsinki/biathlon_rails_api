@@ -12,6 +12,21 @@ def account_balance(url = '/account_balance', account)
 end
 
 namespace :kuusi_palaa do
+
+  desc 'check who didnt turn up after RSVPing'
+  task clear_rsvps: :environment do 
+    Rsvp.joins(:instance).where(["instances.end_at <= ?",Time.current]).pending.each do |rsvp|
+      b = BlockchainTransaction.new( value: 2, account: Account.find_by(address: rsvp.user.get_eth_address), transaction_type: TransactionType.find_by(name: 'Spend'))
+      a = Activity.create(user: rsvp.user, contributor: rsvp.user, item: rsvp.instance, numerical_value: -2, addition: -1, ethtransaction: nil, description: 'didnt_show_after_rsvp', blockchain_transaction: b)
+      if b.save
+        rsvp.update_column(:blockchain_transaction_id, b.id)
+        BlockchainHandlerJob.perform_later b
+      else
+        abort b.errors.inspect
+      end
+    end    
+  end
+
   desc 'check door controller'
   task check_door_controller: :environment do
     require 'net/http'
