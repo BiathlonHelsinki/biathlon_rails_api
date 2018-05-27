@@ -155,6 +155,8 @@ class User < ActiveRecord::Base
         a = Activity.create(user: self, contributor: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended', blockchain_transaction: b)
       else
         a = Activity.create(user: self, contributor: self, item: instance, addition: 1, ethtransaction: nil, description: 'attended_with_rsvp', blockchain_transaction: b)
+        rsvp = instance.rsvps.pending.find_by(user: self)
+        rsvp.blockchain_transaction = b
       end      
       
       # 2. make instance_user
@@ -166,7 +168,7 @@ class User < ActiveRecord::Base
      
       if b.save
         BlockchainHandlerJob.perform_later b
-
+        rsvp.save if defined?(rsvp)
         return {"status" => "success"}
       else
         return {"error" => "error", "message" => b.errors.inspect}
