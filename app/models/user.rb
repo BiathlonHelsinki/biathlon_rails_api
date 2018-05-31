@@ -168,7 +168,9 @@ class User < ActiveRecord::Base
      
       if b.save
         BlockchainHandlerJob.perform_later b
-        rsvp.save if defined?(rsvp)
+        unless rsvp.nil?
+          rsvp.save if defined?(rsvp)
+        end
         return {"status" => "success"}
       else
         return {"error" => "error", "message" => b.errors.inspect}
